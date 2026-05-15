@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Plan 5 Días · Nutrición Activa</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; }
+
+:root {
+  --naranja: #D85A30;
+  --naranja-claro: #FAECE7;
+  --naranja-borde: #F0997B;
+  --naranja-oscuro: #993C1D;
+  --gris-borde: #e0e0e0;
+  --gris-fondo: #f9f9f9;
+}
+
+.app { max-width: 430px; margin: 0 auto; background: #f5f5f5; min-height: 100vh; padding-bottom: 80px; }
+
+.header { background: var(--naranja); color: white; padding: 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+.header-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.header-info h1 { font-size: 16px; font-weight: 600; color: white; }
+.header-info p { font-size: 12px; opacity: 0.85; margin-top: 1px; }
+
+.tabs { display: flex; background: white; border-bottom: 1px solid var(--gris-borde); position: sticky; top: 74px; z-index: 99; }
+.tab { flex: 1; padding: 10px 4px 8px; font-size: 11px; text-align: center; cursor: pointer; color: #888; border-bottom: 2px solid transparent; transition: all 0.15s; user-select: none; }
+.tab.active { color: var(--naranja); border-bottom-color: var(--naranja); font-weight: 600; }
+.tab-icon { font-size: 18px; display: block; margin: 0 auto 2px; }
+
+.content { padding: 12px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Día cards */
+.dia-card { background: white; border-radius: 12px; border: 1px solid var(--gris-borde); margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.dia-header { background: var(--naranja); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+.dia-titulo { font-size: 14px; font-weight: 600; }
+.dia-badge { font-size: 11px; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; }
+.dia-chevron { font-size: 14px; transition: transform 0.2s; }
+.dia-body { padding: 14px 16px; display: none; }
+.dia-body.open { display: block; }
+
+.comida-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+.comida-row:last-of-type { margin-bottom: 0; }
+.comida-chip { background: var(--naranja-claro); border-radius: 6px; padding: 4px 8px; font-size: 11px; color: var(--naranja-oscuro); font-weight: 600; min-width: 72px; text-align: center; flex-shrink: 0; margin-top: 2px; }
+.comida-nombre { font-size: 14px; color: #222; line-height: 1.3; }
+.ver-receta { font-size: 12px; color: var(--naranja); cursor: pointer; display: inline-block; margin-top: 3px; font-weight: 500; }
+
+.nota { background: #FFF8EC; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #7a5000; margin-top: 10px; border-left: 3px solid #EF9F27; line-height: 1.4; }
+
+/* Receta cards */
+.receta-card { background: white; border-radius: 12px; border: 1px solid var(--gris-borde); margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.receta-header { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; user-select: none; }
+.receta-header-txt { flex: 1; }
+.receta-nombre { font-size: 14px; font-weight: 600; color: #222; }
+.receta-sub { font-size: 11px; color: #888; margin-top: 2px; }
+.chevron { font-size: 16px; color: #aaa; transition: transform 0.2s; flex-shrink: 0; }
+.chevron.open { transform: rotate(180deg); }
+.receta-body { padding: 0 16px 14px; display: none; border-top: 1px solid var(--gris-borde); }
+.receta-body.open { display: block; }
+
+.seccion-label { font-size: 11px; font-weight: 700; color: var(--naranja); text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 6px; }
+.ing-list { list-style: none; }
+.ing-item { font-size: 13px; color: #333; padding: 5px 0; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+.ing-item:last-child { border-bottom: none; }
+.ing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--naranja-borde); flex-shrink: 0; }
+.paso-item { font-size: 13px; color: #333; padding: 5px 0; display: flex; gap: 10px; border-bottom: 1px solid #f0f0f0; line-height: 1.4; }
+.paso-item:last-child { border-bottom: none; }
+.paso-num { font-weight: 700; color: var(--naranja); min-width: 16px; font-size: 13px; padding-top: 1px; }
+
+/* Compras */
+.compras-cat { margin-bottom: 16px; }
+.cat-title { font-size: 12px; font-weight: 700; color: var(--naranja); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.cat-icon { font-size: 16px; }
+.compras-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.compra-item { background: white; border: 1px solid var(--gris-borde); border-radius: 8px; padding: 8px 10px; font-size: 13px; color: #333; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.1s; user-select: none; }
+.compra-item:active { transform: scale(0.97); }
+.compra-item.checked { background: var(--naranja-claro); color: var(--naranja-oscuro); text-decoration: line-through; opacity: 0.7; border-color: var(--naranja-borde); }
+.check-box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.compra-item.checked .check-box { background: var(--naranja); border-color: var(--naranja); }
+.check-mark { font-size: 11px; color: white; display: none; }
+.compra-item.checked .check-mark { display: block; }
+
+.contador { background: white; border-radius: 12px; border: 1px solid var(--gris-borde); padding: 12px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.contador-txt { font-size: 13px; color: #555; }
+.contador-num { font-size: 16px; font-weight: 700; color: var(--naranja); }
+.btn-reset { font-size: 12px; color: #888; background: #f5f5f5; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+
+/* Desayunos */
+.desayuno-badge { display: inline-block; background: var(--naranja-claro); color: var(--naranja-oscuro); font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="header-avatar">🥗</div>
+    <div class="header-info">
+      <h1>Plan 5 Días</h1>
+      <p>Nutrición Activa · Melissa Castañares</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('menu', this)">
+      <span class="tab-icon">📅</span>Menú
+    </div>
+    <div class="tab" onclick="showTab('recetas', this)">
+      <span class="tab-icon">📖</span>Recetas
+    </div>
+    <div class="tab" onclick="showTab('compras', this)">
+      <span class="tab-icon">🛒</span>Compras
+    </div>
+    <div class="tab" onclick="showTab('desayunos', this)">
+      <span class="tab-icon">☕</span>Desayunos
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- MENÚ -->
+    <div class="section active" id="menu">
+
+      <div class="dia-card">
+        <div class="dia-header" onclick="toggleDia(this)">
+          <span class="dia-titulo">📌 Día 1</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="dia-badge">Almuerzo + Cena</span>
+            <span class="dia-chevron">▼</span>
+          </div>
+        </div>
+        <div class="dia-body open">
+          <div class="comida-row">
+            <span class="comida-chip">Almuerzo</span>
+            <div>
+              <div class="comida-nombre">Omelette colorido</div>
+              <span class="ver-receta" onclick="goReceta('omelette')">Ver receta →</span>
+            </div>
+          </div>
+          <div class="comida-row">
+            <span class="comida-chip">Cena</span>
+            <div>
+              <div class="comida-nombre">Wok de pollo, tallarines y verduras</div>
+              <span class="ver-receta" onclick="goReceta('wok')">Ver receta →</span>
+            </div>
+          </div>
+          <div class="nota">💡 El wok rinde 2 porciones — guardá una para el almuerzo del día 2</div>
+        </div>
+      </div>
+
+      <div class="dia-card">
+        <div class="dia-header" onclick="toggleDia(this)">
+          <span class="dia-titulo">📌 Día 2</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="dia-badge">Almuerzo + Cena</span>
+            <span class="dia-chevron">▼</span>
+          </div>
+        </div>
+        <div class="dia-body">
+          <div class="comida-row">
+            <span class="comida-chip">Almuerzo</span>
+            <div><div class="comida-nombre">Wok de pollo (porción guardada del día 1)</div></div>
+          </div>
+          <div class="comida-row">
+            <span class="comida-chip">Cena</span>
+            <div>
+              <div class="comida-nombre">Tarta ratatouille</div>
+              <span class="ver-receta" onclick="goReceta('tarta')">Ver receta →</span>
+            </div>
+          </div>
+          <div class="nota">💡 La tarta rinde 8 porciones — guardá una para el día 3 y congelá el resto</div>
+        </div>
+      </div>
+
+      <div class="dia-card">
+        <div class="dia-header" onclick="toggleDia(this)">
+          <span class="dia-titulo">📌 Día 3</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="dia-badge">Almuerzo + Cena</span>
+            <span class="dia-chevron">▼</span>
+          </div>
+        </div>
+        <div class="dia-body">
+          <div class="comida-row">
+            <span class="comida-chip">Almuerzo</span>
+            <div><div class="comida-nombre">Tarta ratatouille + ensalada colorida</div></div>
+          </div>
+          <div class="comida-row">
+            <span class="comida-chip">Cena</span>
+            <div>
+              <div class="comida-nombre">Pollo napolitano con verduras</div>
+              <span class="ver-receta" onclick="goReceta('napolitano')">Ver receta →</span>
+            </div>
+          </div>
+          <div class="nota">💡 El pollo rinde 2 porciones — guardá una para el día 4</div>
+        </div>
+      </div>
+
+      <div class="dia-card">
+        <div class="dia-header" onclick="toggleDia(this)">
+          <span class="dia-titulo">📌 Día 4</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="dia-badge">Almuerzo + Cena</span>
+            <span class="dia-chevron">▼</span>
+          </div>
+        </div>
+        <div class="dia-body">
+          <div class="comida-row">
+            <span class="comida-chip">Almuerzo</span>
+            <div>
+              <div class="comida-nombre">Guisito de carne y verduras</div>
+              <span class="ver-receta" onclick="goReceta('guisito')">Ver receta →</span>
+            </div>
+          </div>
+          <div class="comida-row">
+            <span class="comida-chip">Cena</span>
+            <div>
+              <div class="comida-nombre">Rapidita rellena de pollo napolitano</div>
+            </div>
+          </div>
+          <div class="nota">💡 El guisito rinde 2 porciones — guardá una para el almuerzo del día 5</div>
+        </div>
+      </div>
+
+      <div class="dia-card">
+        <div class="dia-header" onclick="toggleDia(this)">
+          <span class="dia-titulo">📌 Día 5</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="dia-badge">Almuerzo + Cena</span>
+            <span class="dia-chevron">▼</span>
+          </div>
+        </div>
+        <div class="dia-body">
+          <div class="comida-row">
+            <span class="comida-chip">Almuerzo</span>
+            <div><div class="comida-nombre">Guisito de carne y verduras (porción guardada)</div></div>
+          </div>
+          <div class="comida-row">
+            <span class="comida-chip">Cena</span>
+            <div>
+              <div class="comida-nombre">Pizza con base de avena</div>
+              <span class="ver-receta" onclick="goReceta('pizza')">Ver receta →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RECETAS -->
+    <div class="section" id="recetas">
+
+      <div class="receta-card" id="r-omelette">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="receta-nombre">🍳 Omelette colorido</div>
+            <div class="receta-sub">1 porción · Día 1 almuerzo</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>1 huevo + 2 claras</li>
+            <li class="ing-item"><span class="ing-dot"></span>5 hojas de espinaca</li>
+            <li class="ing-item"><span class="ing-dot"></span>1/4 zanahoria rallada</li>
+            <li class="ing-item"><span class="ing-dot"></span>Tomate picado en cubo</li>
+            <li class="ing-item"><span class="ing-dot"></span>30g de queso magro</li>
+            <li class="ing-item"><span class="ing-dot"></span>Condimentos a gusto</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Mezclar los huevos en un bowl y condimentar.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Lavar la espinaca y picarla. Rallar la zanahoria y picar los tomates.</div>
+          <div class="paso-item"><span class="paso-num">3</span>En un sartén agregar los huevos, esperar que se cocine de un lado, dar vuelta y agregar el queso y las verduras en la mitad.</div>
+          <div class="paso-item"><span class="paso-num">4</span>Doblar el omelette, cocinar un poco más y servir con ensalada.</div>
+        </div>
+      </div>
+
+      <div class="receta-card" id="r-wok">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="receta-nombre">🍜 Wok de pollo, tallarines y verduras</div>
+            <div class="receta-sub">2 porciones · Día 1 cena / Día 2 almuerzo</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>240g de pollo</li>
+            <li class="ing-item"><span class="ing-dot"></span>1/2 cebolla</li>
+            <li class="ing-item"><span class="ing-dot"></span>1/4 morrón verde + 1/4 morrón rojo</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 zanahoria</li>
+            <li class="ing-item"><span class="ing-dot"></span>1/2 zapallito</li>
+            <li class="ing-item"><span class="ing-dot"></span>60g de fideos secos</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 cdita de aceite · sal · pimienta</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 cdita de semillas (sésamo, chía o lino)</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Lavar verduras y cortarlas en tiras finas. Cortar el pollo en cubos.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Cocinar los fideos.</div>
+          <div class="paso-item"><span class="paso-num">3</span>En sartén con aceite, saltear las verduras. Cuando estén tiernas, agregar el pollo. Si se pega, agregar 1/4 vaso de agua.</div>
+          <div class="paso-item"><span class="paso-num">4</span>Condimentar con ajo en polvo, orégano y pimienta. Agregar los fideos y cocinar 5 min más.</div>
+          <div class="paso-item"><span class="paso-num">5</span>Servir caliente con semillas por encima. Guardar la otra porción para el día 2.</div>
+        </div>
+      </div>
+
+      <div class="receta-card" id="r-tarta">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="receta-nombre">🥧 Tarta ratatouille</div>
+            <div class="receta-sub">8 porciones · Día 2 cena / Día 3 almuerzo</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Para la masa integral</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>2 tazas de harina integral (o harina de avena sin gluten)</li>
+            <li class="ing-item"><span class="ing-dot"></span>3/4 taza de agua caliente</li>
+            <li class="ing-item"><span class="ing-dot"></span>1/4 taza de aceite</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 cdita de polvo de hornear</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 cdita de sal</li>
+          </ul>
+          <div class="seccion-label">Para el relleno</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>2 huevos</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 berenjena · 1 tomate · 1 zapallito</li>
+            <li class="ing-item"><span class="ing-dot"></span>Sal, pimienta, orégano · 1 cdita de aceite</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Mezclar los ingredientes de la masa, amasar y estirar en tartera antiadherente con los dedos.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Batir los huevos y condimentar.</div>
+          <div class="paso-item"><span class="paso-num">3</span>Cortar los vegetales en rodajas bien finas. Colocar la masa, los huevos y las verduras crudas encima.</div>
+          <div class="paso-item"><span class="paso-num">4</span>Llevar al horno 30-35 minutos. Servir con ensalada colorida. Congelar las porciones sobrantes.</div>
+        </div>
+      </div>
+
+      <div class="receta-card" id="r-napolitano">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="receta-nombre">🍗 Pollo napolitano</div>
+            <div class="receta-sub">2 porciones · Día 3 cena / Día 4 almuerzo</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>240g de pollo (2 churrascos de 120g)</li>
+            <li class="ing-item"><span class="ing-dot"></span>2 fetas de muzzarella o queso magro</li>
+            <li class="ing-item"><span class="ing-dot"></span>Tomate en rodajas</li>
+            <li class="ing-item"><span class="ing-dot"></span>Hojas de albahaca o rúcula</li>
+            <li class="ing-item"><span class="ing-dot"></span>Para la ensalada: tomate, cebolla, hojas verdes, palta</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Cocinar el churrasco de pollo de ambos lados.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Poner el queso encima, tapar a fuego bajo hasta que se derrita. Agregar el tomate y las hojas.</div>
+          <div class="paso-item"><span class="paso-num">3</span>Acompañar con ensalada (sin agregar aceite — la grasa la aporta la palta).</div>
+          <div class="paso-item"><span class="paso-num">4</span>Guardar una porción para el día siguiente.</div>
+        </div>
+      </div>
+
+      <div class="receta-card" id="r-guisito">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="receta-nombre">🍲 Guisito de carne y verduras</div>
+            <div class="receta-sub">2 porciones · Día 4 almuerzo / Día 5 almuerzo</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>240g de carne magra</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 zanahoria chica · 1 cebolla · 1/2 morrón verde</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 zapallito chico · 200g de zapallo</li>
+            <li class="ing-item"><span class="ing-dot"></span>2 vasos de agua o caldo casero</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 diente de ajo · tomillo · perejil</li>
+            <li class="ing-item"><span class="ing-dot"></span>Sal · pimienta · 1 cdita de cúrcuma</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 cda de aceite de oliva extra virgen</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Picar la cebolla y el morrón en cuadraditos. Pelar la zanahoria y cortarla en rodajas.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Cortar la carne en cubos y dorar en sartén con aceite.</div>
+          <div class="paso-item"><span class="paso-num">3</span>Agregar el resto de las verduras y condimentos.</div>
+          <div class="paso-item"><span class="paso-num">4</span>Agregar el caldo y cocinar a fuego bajo 30 min hasta que las verduras estén bien tiernas.</div>
+          <div class="paso-item"><span class="paso-num">5</span>Servir caliente con queso rallado y perejil por encima.</div>
+        </div>
+      </div>
+
+      <div class="receta-card" id="r-pizza">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="receta-nombre">🍕 Pizza con base de avena</div>
+            <div class="receta-sub">1 porción · Día 5 cena</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Para la masa</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>40g de harina de avena sin gluten</li>
+            <li class="ing-item"><span class="ing-dot"></span>50ml de agua · sal (opcional)</li>
+          </ul>
+          <div class="seccion-label">Para armar</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>Salsa de tomate liviana (ver abajo)</li>
+            <li class="ing-item"><span class="ing-dot"></span>Queso magro rallado o muzzarella</li>
+            <li class="ing-item"><span class="ing-dot"></span>Albahaca, espinacas, rúcula, tomates cherry, champiñones</li>
+          </ul>
+          <div class="seccion-label">Salsa de tomate casera</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>2 tomates grandes · 1/4 cebolla · 1/4 morrón rojo · 1 diente de ajo</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 cdita de aceite de oliva EV · orégano · sal · pimienta</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Poner la harina de avena en una ollita con el agua y sal. Hervir hasta que consuma el agua. Enfriar y formar un bollito.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Estirar con maicena o harina de avena lo más fina posible.</div>
+          <div class="paso-item"><span class="paso-num">3</span>Cocinar en sartén caliente de ambos lados. Agregar la salsa y el queso, tapar para que se derrita.</div>
+          <div class="paso-item"><span class="paso-num">4</span>Retirar y colocar los vegetales frescos por encima.</div>
+          <div class="seccion-label">Para la salsa</div>
+          <div class="paso-item"><span class="paso-num">1</span>Saltear cebolla, morrón y ajo con el aceite. Agregar el tomate en cubos y cocinar 5 min.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Licuar todo y condimentar.</div>
+          <div class="nota">💡 Si no podés hacer la salsa casera, usar pulpa de tomate Pontevedra o Limay con sello ADU.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COMPRAS -->
+    <div class="section" id="compras">
+
+      <div class="contador">
+        <span class="contador-txt">Ítems marcados</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="contador-num" id="cont">0 / 0</span>
+          <button class="btn-reset" onclick="resetCompras()">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="nota" style="margin-bottom:14px">Tocá cada ítem para marcarlo al comprar ✓</div>
+
+      <div class="compras-cat">
+        <div class="cat-title"><span class="cat-icon">🥩</span> Proteínas</div>
+        <div class="compras-grid">
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Pollo 480g</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Carne magra 240g</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Huevos x 6</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Queso magro 80g</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Muzzarella</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Queso de untar light</div>
+        </div>
+      </div>
+
+      <div class="compras-cat">
+        <div class="cat-title"><span class="cat-icon">🥦</span> Verduras y frutas</div>
+        <div class="compras-grid">
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Cebolla x 3</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Zanahoria x 3</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Morrón verde x 2</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Morrón rojo x 1</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Zapallito x 3</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Tomate x 5</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Berenjena x 1</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Zapallo 200g</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Espinaca 1 atado</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Ajo 1 cabeza</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Palta x 1</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Rúcula / albahaca</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Tomates cherry</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Champiñones</div>
+        </div>
+      </div>
+
+      <div class="compras-cat">
+        <div class="cat-title"><span class="cat-icon">🌾</span> Cereales y harinas</div>
+        <div class="compras-grid">
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Fideos 60g</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Harina integral 2 tzs</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Harina de avena</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Avena instantánea</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Polvo de hornear</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Maicena (para estirar)</div>
+        </div>
+      </div>
+
+      <div class="compras-cat">
+        <div class="cat-title"><span class="cat-icon">🫙</span> Aceites y condimentos</div>
+        <div class="compras-grid">
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Aceite de oliva EV</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Cúrcuma</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Orégano · tomillo</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Semillas (sésamo/chía)</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Vinagre de manzana</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Edulcorante / stevia</div>
+        </div>
+      </div>
+
+      <div class="compras-cat">
+        <div class="cat-title"><span class="cat-icon">🥛</span> Lácteos y bebidas</div>
+        <div class="compras-grid">
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Yogur descremado</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Bebida vegetal</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>DDL dietético</div>
+          <div class="compra-item" onclick="toggleCheck(this)"><div class="check-box"><span class="check-mark">✓</span></div>Granola sin azúcar</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DESAYUNOS -->
+    <div class="section" id="desayunos">
+
+      <div class="receta-card">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="desayuno-badge">Opción 1</div>
+            <div class="receta-nombre">🥣 Bowl de yogur, granola y fruta</div>
+            <div class="receta-sub">Sin cocción · Muy rápido</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>Yogur descremado sin azúcar natural</li>
+            <li class="ing-item"><span class="ing-dot"></span>3 cdas de granola sin azúcar o mix de frutos secos</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 fruta picada a elección</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="receta-card">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="desayuno-badge">Opción 2</div>
+            <div class="receta-nombre">🍵 Avenita caliente</div>
+            <div class="receta-sub">Con proteína · Reconfortante</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>1 taza de bebida vegetal</li>
+            <li class="ing-item"><span class="ing-dot"></span>2 claras de huevo</li>
+            <li class="ing-item"><span class="ing-dot"></span>30g de avena o harina sin gluten</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 pera o manzana</li>
+            <li class="ing-item"><span class="ing-dot"></span>Edulcorante o vainilla (opcional)</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>En una ollita poner la leche con la avena. Al romper hervor agregar las claras de a poco, mezclando.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Retirar y picar la pera o manzana por encima.</div>
+        </div>
+      </div>
+
+      <div class="receta-card">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="desayuno-badge">Opción 3</div>
+            <div class="receta-nombre">🫓 Galletón de avena</div>
+            <div class="receta-sub">Salado · Con toppings</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>2 cdas de avena instantánea</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 clara + 1 cda de queso de untar light</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Mezclar y condimentar con sal y orégano. Cocinar en sartén de ambos lados.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Agregar tomate, 1 cda de palta y 1/2 fruta picada.</div>
+        </div>
+      </div>
+
+      <div class="receta-card">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="desayuno-badge">Opción 4</div>
+            <div class="receta-nombre">🥞 Panqueques de manzana y canela</div>
+            <div class="receta-sub">Dulce · 10 minutos</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>1 huevo · 1/2 manzana</li>
+            <li class="ing-item"><span class="ing-dot"></span>2 cdas de harina de avena</li>
+            <li class="ing-item"><span class="ing-dot"></span>2 sobres de edulcorante · canela · vainilla · polvo de hornear</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Mezclar todo y batir con tenedor.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Cocinar en sartén de ambos lados. Rallar o picar la 1/2 manzana por encima. Sale 1 grande o 2 pequeños.</div>
+        </div>
+      </div>
+
+      <div class="receta-card">
+        <div class="receta-header" onclick="toggleReceta(this)">
+          <div class="receta-header-txt">
+            <div class="desayuno-badge">Opción 5 · 1 vez por semana</div>
+            <div class="receta-nombre">🍌 Budín de banana y DDL</div>
+            <div class="receta-sub">2 porciones · Horno 15-20 min</div>
+          </div>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="receta-body">
+          <div class="seccion-label">Ingredientes</div>
+          <ul class="ing-list">
+            <li class="ing-item"><span class="ing-dot"></span>2 huevos</li>
+            <li class="ing-item"><span class="ing-dot"></span>4 cdas de avena</li>
+            <li class="ing-item"><span class="ing-dot"></span>1 banana pisada + 1 banana para encima</li>
+            <li class="ing-item"><span class="ing-dot"></span>3 cditas de dulce de leche dietético</li>
+            <li class="ing-item"><span class="ing-dot"></span>Canela · 4 sobres de stevia · 1 cdita de polvo de hornear</li>
+          </ul>
+          <div class="seccion-label">Preparación</div>
+          <div class="paso-item"><span class="paso-num">1</span>Mezclar todo. Volcar la mitad en el molde, agregar el DDL, cubrir con el resto.</div>
+          <div class="paso-item"><span class="paso-num">2</span>Horno 15-20 minutos. Rinde 2 porciones — consumir la mitad.</div>
+          <div class="nota">Se puede acompañar con café con leche.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function toggleDia(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.dia-chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function toggleReceta(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+
+function goReceta(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('recetas').classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  setTimeout(() => {
+    const card = document.getElementById('r-' + id);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const body = card.querySelector('.receta-body');
+      const chevron = card.querySelector('.chevron');
+      if (!body.classList.contains('open')) {
+        body.classList.add('open');
+        chevron.classList.add('open');
+      }
+    }
+  }, 150);
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateContador();
+}
+
+function updateContador() {
+  const all = document.querySelectorAll('#compras .compra-item');
+  const checked = document.querySelectorAll('#compras .compra-item.checked');
+  document.getElementById('cont').textContent = checked.length + ' / ' + all.length;
+}
+
+function resetCompras() {
+  document.querySelectorAll('#compras .compra-item').forEach(i => i.classList.remove('checked'));
+  updateContador();
+}
+
+updateContador();
+</script>
+</body>
+</html>
