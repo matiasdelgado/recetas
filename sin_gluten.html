@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recetas Sin Gluten</title>
+<style>
+:root {
+  --teal: #2aaa8a;
+  --teal-dark: #1d7d66;
+  --teal-light: #e0f5f0;
+  --teal-mid: #b2e4d8;
+  --text: #1a2e2a;
+  --text-light: #4a6b63;
+  --bg: #f4faf8;
+  --white: #ffffff;
+  --shadow: 0 2px 8px rgba(42,170,138,0.15);
+  --radius: 12px;
+  --warn: #e07b39;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+header {
+  background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+  color: white;
+  padding: 16px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; }
+header p { font-size: 0.75rem; opacity: 0.85; margin-top: 2px; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--white);
+  border-bottom: 2px solid var(--teal-mid);
+  position: sticky;
+  top: 60px;
+  z-index: 99;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border: none;
+  background: transparent;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.2s;
+}
+.tab-btn .icon { font-size: 1.2rem; }
+.tab-btn.active {
+  color: var(--teal);
+  border-bottom: 3px solid var(--teal);
+  font-weight: 700;
+}
+
+/* SECTIONS */
+.section { display: none; padding: 12px; }
+.section.active { display: block; }
+
+/* SEARCH BAR */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid var(--teal-mid);
+  border-radius: 24px;
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--white);
+}
+.search-bar input:focus { border-color: var(--teal); }
+.search-bar button {
+  padding: 10px 14px;
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* FILTER CHIPS */
+.filter-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 2px solid var(--teal-mid);
+  background: var(--white);
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+.chip.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: white;
+  font-weight: 600;
+}
+
+/* RECIPE CARDS */
+.recipe-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--teal-mid);
+}
+.recipe-header {
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.recipe-header-info { flex: 1; }
+.recipe-header-info h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.recipe-meta { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+.badge {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.badge-cat { background: var(--teal-light); color: var(--teal-dark); }
+.badge-dif-baja { background: #e8f5e9; color: #2e7d32; }
+.badge-dif-media { background: #fff8e1; color: #f57f17; }
+.badge-dif-alta { background: #fce4ec; color: #c62828; }
+.badge-time { background: #f3f0ff; color: #5e35b1; }
+.recipe-icons { display: flex; gap: 6px; align-items: center; }
+.fav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+  transition: transform 0.2s;
+}
+.fav-btn:active { transform: scale(1.3); }
+.expand-icon { color: var(--text-light); font-size: 0.9rem; transition: transform 0.3s; }
+.recipe-card.open .expand-icon { transform: rotate(180deg); }
+
+.recipe-body {
+  display: none;
+  border-top: 1px solid var(--teal-light);
+}
+.recipe-card.open .recipe-body { display: block; }
+
+.recipe-section { padding: 12px 14px; }
+.recipe-section h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--teal);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+/* SERVINGS SCALER */
+.servings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  background: var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.servings-row span { font-size: 0.85rem; color: var(--text-light); flex: 1; }
+.servings-ctrl { display: flex; align-items: center; gap: 8px; }
+.servings-ctrl button {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--teal);
+  background: var(--white);
+  color: var(--teal);
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.servings-num {
+  font-weight: 700;
+  color: var(--teal-dark);
+  font-size: 1rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* INGREDIENTS LIST */
+.ing-list { list-style: none; }
+.ing-list li {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--teal-light);
+  font-size: 0.875rem;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.ing-list li:last-child { border-bottom: none; }
+.ing-qty { font-weight: 700; color: var(--teal-dark); min-width: 60px; }
+.ing-name { color: var(--text); }
+
+.prep-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* NUTRITION TABLE */
+.nutri-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.nutri-table td {
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--teal-light);
+}
+.nutri-table tr:last-child td { border-bottom: none; }
+.nutri-table td:first-child { color: var(--text-light); }
+.nutri-table td:last-child { font-weight: 700; color: var(--teal-dark); text-align: right; }
+
+/* SHOPPING LIST */
+.shopping-section { margin-bottom: 16px; }
+.shopping-section h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--teal-dark);
+  padding: 8px 12px;
+  background: var(--teal-light);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--white);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--teal-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.shop-item.checked {
+  opacity: 0.5;
+  text-decoration: line-through;
+  background: #f5f5f5;
+}
+.shop-item .check-icon { font-size: 1.1rem; }
+.shop-item-qty { font-weight: 700; color: var(--teal-dark); font-size: 0.85rem; min-width: 70px; }
+.shop-item-name { font-size: 0.875rem; }
+
+/* RECIPE SELECTOR for shopping */
+.recipe-selector {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--teal-mid);
+}
+.recipe-selector h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 10px;
+}
+.sel-recipe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: background 0.15s;
+}
+.sel-recipe:hover { background: var(--teal-light); }
+.sel-recipe input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.sel-recipe label {
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+}
+.sel-category {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 10px 0 4px;
+}
+.shop-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.shop-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-gen { background: var(--teal); color: white; }
+.btn-clear { background: var(--teal-light); color: var(--teal-dark); }
+.btn-reset { background: #fff0ec; color: var(--warn); }
+.shop-counter {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+.empty-msg {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* FAVORITES */
+#fav-section .empty-msg { padding: 48px 24px; }
+
+/* BOTTOM NAV handled by tabs */
+</style>
+</head>
+<body>
+<header>
+  <h1>🌾 Recetas Sin Gluten</h1>
+  <p>Susana Mostto &amp; Ayelén Pérez · UNER 2022</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('recetas')">
+    <span class="icon">📖</span>Recetas
+  </button>
+  <button class="tab-btn" onclick="showTab('favoritos')">
+    <span class="icon">⭐</span>Favoritos
+  </button>
+  <button class="tab-btn" onclick="showTab('compras')">
+    <span class="icon">🛒</span>Compras
+  </button>
+</div>
+
+<!-- ===== RECETAS ===== -->
+<div id="tab-recetas" class="section active">
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Buscar receta..." oninput="filterRecipes()">
+    <button onclick="clearSearch()">✕</button>
+  </div>
+  <div class="filter-row" id="filter-chips"></div>
+  <div id="recipes-container"></div>
+</div>
+
+<!-- ===== FAVORITOS ===== -->
+<div id="tab-favoritos" class="section">
+  <div id="fav-section"></div>
+</div>
+
+<!-- ===== COMPRAS ===== -->
+<div id="tab-compras" class="section">
+  <div class="recipe-selector">
+    <h3>Seleccioná las recetas que vas a preparar</h3>
+    <div id="recipe-selector-list"></div>
+  </div>
+  <div class="shop-actions">
+    <button class="btn-gen" onclick="generateShoppingList()">🛒 Generar lista</button>
+    <button class="btn-clear" onclick="checkAllShop()">✅ Marcar todo</button>
+    <button class="btn-reset" onclick="resetShop()">↺ Limpiar</button>
+  </div>
+  <div class="shop-counter" id="shop-counter"></div>
+  <div id="shopping-list-output"></div>
+</div>
+
+<script>
+// ===========================
+// DATA
+// ===========================
+const RECIPES = [
+// RECETAS SALADAS — 27 recetas (id 1-27)
+// Panes, galletas y bizcochos (14)
+{id:1,name:"Bizcochitos de grasa con queso",cat:"Panes y bizcochos",dif:"baja",time:30,servingsBase:30,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"100",unit:"g",name:"grasa porcina"},
+{id:4,qty:"80",unit:"g",name:"queso rallado"},
+{id:5,qty:"5",unit:"g",name:"sal"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"50",unit:"cc",name:"agua tibia"}
+],
+prep:"Mezclar las harinas con el polvo leudante y la sal. Agregar la grasa a temperatura ambiente y desmenuzar con los dedos hasta obtener migas. Incorporar el queso rallado. Agregar agua de a poco hasta unir la masa. Estirar a 5mm, cortar con cortante redondo pequeño. Hornear a 200°C por 12-15 min hasta dorar.",
+nutri:{Calorías:"120 kcal",Carbohidratos:"16 g",Proteínas:"3 g",Grasas:"5 g"}},
+
+{id:2,name:"Bizcochitos de quinoa",cat:"Panes y bizcochos",dif:"baja",time:30,servingsBase:30,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de quinoa"},
+{id:2,qty:"100",unit:"g",name:"harina de arroz"},
+{id:3,qty:"80",unit:"g",name:"grasa o margarina"},
+{id:4,qty:"50",unit:"g",name:"queso rallado"},
+{id:5,qty:"5",unit:"g",name:"sal"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"50",unit:"cc",name:"agua"}
+],
+prep:"Proceder igual que los bizcochitos de grasa pero con harina de quinoa que aporta mayor valor nutricional. Estirar y cortar. Hornear a 200°C por 12 min.",
+nutri:{Calorías:"115 kcal",Carbohidratos:"15 g",Proteínas:"3 g",Grasas:"5 g"}},
+
+{id:3,name:"Bizcochos salados",cat:"Panes y bizcochos",dif:"baja",time:35,servingsBase:24,
+ings:[
+{id:0,qty:"400",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"100",unit:"g",name:"grasa o margarina"},
+{id:2,qty:"5",unit:"g",name:"sal"},
+{id:3,qty:"10",unit:"g",name:"polvo leudante"},
+{id:4,qty:"100",unit:"cc",name:"agua tibia"}
+],
+prep:"Mezclar harinas, polvo leudante y sal. Agregar la grasa cortada en trozos pequeños y desmenuzar con los dedos. Incorporar el agua de a poco hasta formar una masa homogénea, sin amasar en exceso. Estirar a 1cm de espesor. Cortar en rectángulos o usar molde de bizcochos. Hornear a 200°C por 18-20 min.",
+nutri:{Calorías:"130 kcal",Carbohidratos:"19 g",Proteínas:"2 g",Grasas:"5 g"}},
+
+{id:4,name:"Bizcochos salados con semita",cat:"Panes y bizcochos",dif:"baja",time:35,servingsBase:24,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"semita (fécula de trigo sarraceno o mix)"},
+{id:2,qty:"100",unit:"g",name:"harina de arroz"},
+{id:3,qty:"100",unit:"g",name:"grasa"},
+{id:4,qty:"5",unit:"g",name:"sal"},
+{id:5,qty:"10",unit:"g",name:"polvo leudante"},
+{id:6,qty:"80",unit:"cc",name:"agua"}
+],
+prep:"Similar a bizcochos salados pero con semita, que aporta textura más crocante. Mezclar ingredientes secos, incorporar grasa, agregar agua hasta unir. Cortar y hornear a 200°C por 18 min.",
+nutri:{Calorías:"125 kcal",Carbohidratos:"18 g",Proteínas:"2 g",Grasas:"5 g"}},
+
+{id:5,name:"Galletas secas",cat:"Panes y bizcochos",dif:"baja",time:25,servingsBase:40,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"80",unit:"g",name:"margarina"},
+{id:3,qty:"5",unit:"g",name:"sal"},
+{id:4,qty:"10",unit:"g",name:"polvo leudante"},
+{id:5,qty:"80",unit:"cc",name:"agua"}
+],
+prep:"Mezclar harinas, sal y polvo leudante. Agregar margarina y desmenuzar. Incorporar agua hasta obtener masa firme. Estirar muy fina (2mm). Cortar en cuadrados o rectángulos. Pinchar con tenedor. Hornear a 200°C por 8-10 min hasta dorar y quedar crocantes.",
+nutri:{Calorías:"55 kcal",Carbohidratos:"9 g",Proteínas:"1 g",Grasas:"2 g"}},
+
+{id:6,name:"Galletitas con queso",cat:"Panes y bizcochos",dif:"baja",time:30,servingsBase:36,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"100",unit:"g",name:"queso rallado"},
+{id:4,qty:"80",unit:"g",name:"margarina"},
+{id:5,qty:"5",unit:"g",name:"sal"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"1",unit:"",name:"huevo"}
+],
+prep:"Batir margarina blanda con el queso rallado. Agregar el huevo. Incorporar las harinas tamizadas con sal y polvo leudante. Amasar hasta obtener masa homogénea. Estirar y cortar o hacer bolitas aplastadas. Hornear a 190°C por 12-15 min.",
+nutri:{Calorías:"90 kcal",Carbohidratos:"12 g",Proteínas:"3 g",Grasas:"4 g"}},
+
+{id:7,name:"Grisines",cat:"Panes y bizcochos",dif:"media",time:40,servingsBase:30,
+ings:[
+{id:0,qty:"400",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"agua tibia"},
+{id:2,qty:"20",unit:"g",name:"levadura prensada"},
+{id:3,qty:"30",unit:"cc",name:"aceite de oliva"},
+{id:4,qty:"5",unit:"g",name:"sal"},
+{id:5,qty:"",unit:"c/n",name:"semillas de sésamo o amapola (opcional)"}
+],
+prep:"Disolver la levadura en agua tibia. Mezclar la harina con la sal. Agregar el aceite y la levadura disuelta. Amasar hasta obtener masa lisa. Leudar 30 min. Tomar porciones y estirar en bastones finos. Pasar por semillas. Hornear a 200°C por 15-18 min hasta quedar crocantes.",
+nutri:{Calorías:"75 kcal",Carbohidratos:"13 g",Proteínas:"2 g",Grasas:"2 g"}},
+
+{id:8,name:"Medialunas saladas",cat:"Panes y bizcochos",dif:"alta",time:90,servingsBase:24,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"leche tibia"},
+{id:2,qty:"100",unit:"g",name:"grasa o margarina"},
+{id:3,qty:"25",unit:"g",name:"levadura prensada"},
+{id:4,qty:"5",unit:"g",name:"sal"},
+{id:5,qty:"1",unit:"",name:"huevo"},
+{id:6,qty:"50",unit:"g",name:"queso rallado"}
+],
+prep:"Disolver levadura en leche tibia con un poco de harina. Mezclar harina con sal. Agregar grasa, huevo y levadura. Amasar bien. Leudar 40 min. Estirar en círculo, cortar en triángulos. Colocar un poco de queso en la base y enrollar hacia la punta. Leudar 20 min. Hornear a 200°C por 15-18 min.",
+nutri:{Calorías:"175 kcal",Carbohidratos:"26 g",Proteínas:"5 g",Grasas:"6 g"}},
+
+{id:9,name:"Pan casero",cat:"Panes y bizcochos",dif:"media",time:90,servingsBase:8,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"300",unit:"cc",name:"agua tibia"},
+{id:2,qty:"25",unit:"g",name:"levadura prensada"},
+{id:3,qty:"30",unit:"cc",name:"aceite"},
+{id:4,qty:"10",unit:"g",name:"sal"},
+{id:5,qty:"5",unit:"g",name:"azúcar"}
+],
+prep:"Disolver levadura en agua tibia con azúcar. Mezclar harina con sal. Agregar aceite y levadura disuelta. Mezclar bien hasta obtener masa blanda y pegajosa (más húmeda que el pan de trigo). Colocar en molde de budinera enaceitado. Leudar 45 min hasta doblar el volumen. Hornear a 200°C por 35-40 min.",
+nutri:{Calorías:"195 kcal",Carbohidratos:"36 g",Proteínas:"4 g",Grasas:"4 g"}},
+
+{id:10,name:"Pan clásico",cat:"Panes y bizcochos",dif:"media",time:90,servingsBase:8,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"280",unit:"cc",name:"agua tibia"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"30",unit:"cc",name:"aceite"},
+{id:6,qty:"10",unit:"g",name:"sal"},
+{id:7,qty:"5",unit:"g",name:"azúcar"}
+],
+prep:"Preparar esponja con levadura, agua y 50g de harina. Esperar 15 min hasta que espume. Mezclar el resto de los ingredientes e incorporar la esponja. Batir bien con cuchara de madera o procesadora. La masa queda más húmeda que la tradicional. Hornear en molde de budinera a 200°C por 35-40 min.",
+nutri:{Calorías:"200 kcal",Carbohidratos:"37 g",Proteínas:"4 g",Grasas:"4 g"}},
+
+{id:11,name:"Pan de 'Cacho'",cat:"Panes y bizcochos",dif:"baja",time:60,servingsBase:8,
+ings:[
+{id:0,qty:"400",unit:"g",name:"harina de mandioca"},
+{id:1,qty:"200",unit:"g",name:"queso fresco o cuartirolo"},
+{id:2,qty:"2",unit:"",name:"huevos"},
+{id:3,qty:"50",unit:"cc",name:"aceite"},
+{id:4,qty:"5",unit:"g",name:"sal"}
+],
+prep:"Mezclar la harina de mandioca con el queso desmenuzado, los huevos y el aceite. Agregar sal. Amasar hasta obtener masa homogénea. Si queda muy seca, agregar un poco de agua. Formar pancitos o bollos. Hornear a 190°C por 25-30 min hasta dorar.",
+nutri:{Calorías:"210 kcal",Carbohidratos:"30 g",Proteínas:"7 g",Grasas:"7 g"}},
+
+{id:12,name:"Pan para hamburguesas",cat:"Panes y bizcochos",dif:"media",time:90,servingsBase:8,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"250",unit:"cc",name:"agua tibia"},
+{id:2,qty:"25",unit:"g",name:"levadura prensada"},
+{id:3,qty:"30",unit:"g",name:"margarina"},
+{id:4,qty:"10",unit:"g",name:"azúcar"},
+{id:5,qty:"8",unit:"g",name:"sal"},
+{id:6,qty:"1",unit:"",name:"huevo"},
+{id:7,qty:"",unit:"c/n",name:"semillas de sésamo"}
+],
+prep:"Disolver levadura en agua tibia con azúcar. Mezclar harinas y sal. Agregar margarina blanda, huevo y levadura disuelta. Amasar bien. Leudar 40 min. Formar 8 bollos achatados. Pintar con huevo y decorar con sésamo. Leudar 20 min. Hornear a 190°C por 20-25 min.",
+nutri:{Calorías:"230 kcal",Carbohidratos:"40 g",Proteínas:"5 g",Grasas:"6 g"}},
+
+{id:13,name:"Pancitos saborizados",cat:"Panes y bizcochos",dif:"media",time:80,servingsBase:12,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"250",unit:"cc",name:"agua tibia"},
+{id:2,qty:"25",unit:"g",name:"levadura prensada"},
+{id:3,qty:"30",unit:"cc",name:"aceite"},
+{id:4,qty:"8",unit:"g",name:"sal"},
+{id:5,qty:"",unit:"c/n",name:"orégano, romero o cebolla deshidratada"}
+],
+prep:"Disolver levadura en agua tibia. Mezclar harina, sal y el saborizado elegido. Agregar aceite y levadura. Mezclar hasta masa blanda. Formar pancitos. Leudar 35 min. Hornear a 200°C por 20-25 min.",
+nutri:{Calorías:"185 kcal",Carbohidratos:"34 g",Proteínas:"4 g",Grasas:"4 g"}},
+
+{id:14,name:"Tortas fritas",cat:"Panes y bizcochos",dif:"baja",time:30,servingsBase:12,
+ings:[
+{id:0,qty:"400",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"100",unit:"g",name:"grasa"},
+{id:2,qty:"5",unit:"g",name:"sal"},
+{id:3,qty:"10",unit:"g",name:"polvo leudante"},
+{id:4,qty:"150",unit:"cc",name:"agua tibia"},
+{id:5,qty:"",unit:"c/n",name:"aceite para freír"}
+],
+prep:"Mezclar harinas, polvo leudante y sal. Agregar la grasa desmenuzada e incorporar el agua de a poco hasta unir. Amasar hasta masa suave. Estirar en círculos de 5mm de espesor y hacer un corte en el centro. Freír en aceite caliente hasta dorar de ambos lados. Escurrir y consumir calientes.",
+nutri:{Calorías:"245 kcal",Carbohidratos:"32 g",Proteínas:"3 g",Grasas:"12 g"}},
+
+// Pastas y otros amasados (6)
+{id:15,name:"Masa para canelones",cat:"Pastas y amasados",dif:"media",time:40,servingsBase:4,
+ings:[
+{id:0,qty:"200",unit:"g",name:"fécula de mandioca"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"2",unit:"",name:"huevos"},
+{id:3,qty:"30",unit:"cc",name:"aceite"},
+{id:4,qty:"5",unit:"g",name:"sal"},
+{id:5,qty:"50",unit:"cc",name:"agua caliente"}
+],
+prep:"Mezclar las féculas con la sal. Agregar los huevos batidos y el aceite. Incorporar el agua caliente de a poco hasta obtener masa manejable. Estirar muy fina. Cortar en rectángulos de 10x12cm. Rellenar con verduras o carne. Enrollar y colocar en fuente con salsa. Hornear a 180°C por 25 min cubiertos con salsa de tomate y bechamel.",
+nutri:{Calorías:"185 kcal",Carbohidratos:"30 g",Proteínas:"5 g",Grasas:"5 g"}},
+
+{id:16,name:"Fideos",cat:"Pastas y amasados",dif:"media",time:30,servingsBase:4,
+ings:[
+{id:0,qty:"300",unit:"g",name:"fécula de mandioca"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"3",unit:"",name:"huevos"},
+{id:3,qty:"5",unit:"g",name:"sal"},
+{id:4,qty:"20",unit:"cc",name:"aceite"}
+],
+prep:"Mezclar féculas con sal. Agregar los huevos batidos con el aceite. Amasar hasta obtener masa lisa y elástica. Si queda seca, agregar agua de a cucharadas. Estirar en láminas finas (con palote o máquina de pasta). Cortar en el ancho deseado. Cocinar en abundante agua con sal entre 3-5 min.",
+nutri:{Calorías:"220 kcal",Carbohidratos:"38 g",Proteínas:"7 g",Grasas:"4 g"}},
+
+{id:17,name:"Lasagna",cat:"Pastas y amasados",dif:"alta",time:90,servingsBase:6,
+ings:[
+{id:0,qty:"300",unit:"g",name:"fécula de mandioca"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"3",unit:"",name:"huevos"},
+{id:3,qty:"5",unit:"g",name:"sal"},
+{id:4,qty:"500",unit:"g",name:"carne picada"},
+{id:5,qty:"1",unit:"lata",name:"tomates peritas"},
+{id:6,qty:"200",unit:"g",name:"queso mozzarella"},
+{id:7,qty:"500",unit:"cc",name:"salsa bechamel sin gluten"}
+],
+prep:"Preparar las láminas de pasta igual que los fideos pero cortadas en rectángulos grandes. Cocinar las láminas en agua con sal 2-3 min. Preparar relleno con carne salteada y tomate. Armar en fuente: capa de bechamel, láminas, relleno, queso. Repetir capas. Cubrir con bechamel y queso rallado. Hornear a 180°C por 30-35 min.",
+nutri:{Calorías:"410 kcal",Carbohidratos:"38 g",Proteínas:"25 g",Grasas:"17 g"}},
+
+{id:18,name:"Ñoquis de papa",cat:"Pastas y amasados",dif:"media",time:60,servingsBase:4,
+ings:[
+{id:0,qty:"500",unit:"g",name:"papas hervidas y pisadas"},
+{id:1,qty:"150",unit:"g",name:"fécula de mandioca"},
+{id:2,qty:"50",unit:"g",name:"almidón de maíz"},
+{id:3,qty:"1",unit:"",name:"huevo"},
+{id:4,qty:"5",unit:"g",name:"sal"},
+{id:5,qty:"",unit:"c/n",name:"nuez moscada"}
+],
+prep:"Cocinar las papas con cáscara. Pelar y pisar mientras están calientes. Dejar entibiar. Agregar el huevo, la sal y la nuez moscada. Incorporar la fécula y el almidón de a poco, amasando hasta obtener masa que no se pegue. Formar cilindros y cortar los ñoquis. Cocinar en agua hirviendo con sal hasta que suban a la superficie (2-3 min). Servir con la salsa de preferencia.",
+nutri:{Calorías:"195 kcal",Carbohidratos:"38 g",Proteínas:"4 g",Grasas:"2 g"}},
+
+{id:19,name:"Pionono salado",cat:"Pastas y amasados",dif:"media",time:35,servingsBase:8,
+ings:[
+{id:0,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"50",unit:"g",name:"harina de arroz"},
+{id:2,qty:"4",unit:"",name:"huevos"},
+{id:3,qty:"5",unit:"g",name:"sal"},
+{id:4,qty:"10",unit:"g",name:"polvo leudante"},
+{id:5,qty:"",unit:"c/n",name:"relleno a elección (verduras, queso, jamón)"}
+],
+prep:"Batir los huevos con la sal hasta espumar. Incorporar en forma envolvente las harinas tamizadas con el polvo leudante. Extender en placa forrada de papel manteca. Hornear a 200°C por 10-12 min. Desmoldar sobre trapo húmedo. Rellenar con preparación salada a gusto y enrollar.",
+nutri:{Calorías:"120 kcal",Carbohidratos:"16 g",Proteínas:"6 g",Grasas:"4 g"}},
+
+{id:20,name:"Ravioles de verdura",cat:"Pastas y amasados",dif:"alta",time:70,servingsBase:4,
+ings:[
+{id:0,qty:"300",unit:"g",name:"fécula de mandioca"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"3",unit:"",name:"huevos"},
+{id:3,qty:"5",unit:"g",name:"sal"},
+{id:4,qty:"300",unit:"g",name:"espinaca cocida y escurrida"},
+{id:5,qty:"200",unit:"g",name:"ricota"},
+{id:6,qty:"50",unit:"g",name:"queso rallado"},
+{id:7,qty:"1",unit:"",name:"huevo (para el relleno)"},
+{id:8,qty:"",unit:"c/n",name:"nuez moscada y sal (para el relleno)"}
+],
+prep:"Preparar masa igual que los fideos. Estirar en láminas finas. Preparar relleno mezclando espinaca picada, ricota, queso, huevo, sal y nuez moscada. Colocar porciones de relleno sobre una lámina, cubrir con otra, presionar alrededor del relleno y cortar. Cocinar en agua con sal hasta que suban (3-4 min).",
+nutri:{Calorías:"290 kcal",Carbohidratos:"38 g",Proteínas:"13 g",Grasas:"8 g"}},
+
+// Pizzas, tartas y empanadas (7)
+{id:21,name:"Masa para tarta",cat:"Pizzas, tartas y empanadas",dif:"baja",time:20,servingsBase:8,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"100",unit:"g",name:"margarina"},
+{id:4,qty:"5",unit:"g",name:"sal"},
+{id:5,qty:"1",unit:"",name:"huevo"},
+{id:6,qty:"30",unit:"cc",name:"agua fría"}
+],
+prep:"Mezclar las harinas con la sal. Agregar la margarina fría cortada en trozos y desmenuzar con los dedos hasta obtener migas. Agregar el huevo y el agua de a poco hasta unir la masa sin amasar en exceso. Estirar en el molde de tarta, pinchar con tenedor y precocinar a 180°C por 10 min antes de rellenar.",
+nutri:{Calorías:"195 kcal",Carbohidratos:"25 g",Proteínas:"3 g",Grasas:"10 g"}},
+
+{id:22,name:"Masa para tarteletas",cat:"Pizzas, tartas y empanadas",dif:"baja",time:25,servingsBase:12,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"80",unit:"g",name:"margarina"},
+{id:3,qty:"5",unit:"g",name:"sal"},
+{id:4,qty:"1",unit:"",name:"huevo"},
+{id:5,qty:"20",unit:"cc",name:"agua fría"}
+],
+prep:"Igual que la masa de tarta pero en proporciones para moldes individuales. Forrar los moldes de tarteleta. Precocinar a 180°C por 8-10 min. Rellenar con preparación salada y terminar de cocinar.",
+nutri:{Calorías:"130 kcal",Carbohidratos:"16 g",Proteínas:"2 g",Grasas:"7 g"}},
+
+{id:23,name:"Mayotarta",cat:"Pizzas, tartas y empanadas",dif:"media",time:50,servingsBase:6,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"100",unit:"g",name:"mayonesa"},
+{id:4,qty:"3",unit:"",name:"huevos"},
+{id:5,qty:"5",unit:"g",name:"sal"},
+{id:6,qty:"",unit:"c/n",name:"relleno a elección (atún, verduras, etc.)"}
+],
+prep:"Mezclar las harinas con la sal. Agregar la mayonesa y los huevos batidos. Mezclar hasta obtener masa blanda. Colocar en molde enmantecado. Agregar el relleno elegido. Cubrir con el resto de la masa o dejar descubierta. Hornear a 180°C por 30-35 min.",
+nutri:{Calorías:"260 kcal",Carbohidratos:"30 g",Proteínas:"8 g",Grasas:"13 g"}},
+
+{id:24,name:"Pizza",cat:"Pizzas, tartas y empanadas",dif:"media",time:50,servingsBase:4,
+ings:[
+{id:0,qty:"400",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"200",unit:"cc",name:"agua tibia"},
+{id:2,qty:"25",unit:"g",name:"levadura prensada"},
+{id:3,qty:"30",unit:"cc",name:"aceite de oliva"},
+{id:4,qty:"8",unit:"g",name:"sal"},
+{id:5,qty:"",unit:"c/n",name:"salsa de tomate"},
+{id:6,qty:"200",unit:"g",name:"queso mozzarella"},
+{id:7,qty:"",unit:"c/n",name:"orégano y aceitunas"}
+],
+prep:"Disolver la levadura en agua tibia. Mezclar harina con sal, agregar aceite y levadura. Mezclar bien hasta masa pegajosa y homogénea. Extender en placa aceitada sin estirar con palote (usar las manos). Leudar 30 min. Agregar cobertura. Hornear a 220°C por 20-25 min.",
+nutri:{Calorías:"320 kcal",Carbohidratos:"45 g",Proteínas:"12 g",Grasas:"10 g"}},
+
+{id:25,name:"Pizza con residuos de soja",cat:"Pizzas, tartas y empanadas",dif:"media",time:50,servingsBase:4,
+ings:[
+{id:0,qty:"300",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"100",unit:"g",name:"residuo de soja (okara)"},
+{id:2,qty:"200",unit:"cc",name:"agua tibia"},
+{id:3,qty:"25",unit:"g",name:"levadura prensada"},
+{id:4,qty:"30",unit:"cc",name:"aceite"},
+{id:5,qty:"8",unit:"g",name:"sal"},
+{id:6,qty:"",unit:"c/n",name:"cobertura a elección"}
+],
+prep:"Igual que la pizza clásica pero incorporando el residuo de soja (okara) que aporta proteínas y fibra. La masa resulta un poco más pesada pero muy nutritiva. Hornear a 220°C por 20-25 min.",
+nutri:{Calorías:"285 kcal",Carbohidratos:"40 g",Proteínas:"10 g",Grasas:"9 g"}},
+
+{id:26,name:"Pizza de pencas de acelga",cat:"Pizzas, tartas y empanadas",dif:"media",time:60,servingsBase:4,
+ings:[
+{id:0,qty:"400",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"200",unit:"cc",name:"agua tibia"},
+{id:2,qty:"25",unit:"g",name:"levadura prensada"},
+{id:3,qty:"30",unit:"cc",name:"aceite"},
+{id:4,qty:"8",unit:"g",name:"sal"},
+{id:5,qty:"300",unit:"g",name:"pencas de acelga cocidas"},
+{id:6,qty:"200",unit:"g",name:"queso"},
+{id:7,qty:"",unit:"c/n",name:"salsa blanca"}
+],
+prep:"Preparar masa de pizza. Cocinar las pencas de acelga en agua con sal hasta tiernas. Escurrir y cortar. Sobre la masa preparar cobertura con las pencas salteadas, salsa blanca y queso. Hornear a 220°C por 20-25 min.",
+nutri:{Calorías:"290 kcal",Carbohidratos:"42 g",Proteínas:"11 g",Grasas:"9 g"}},
+
+{id:27,name:"Tapas para empanadas",cat:"Pizzas, tartas y empanadas",dif:"media",time:40,servingsBase:24,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"80",unit:"g",name:"grasa o margarina"},
+{id:4,qty:"8",unit:"g",name:"sal"},
+{id:5,qty:"100",unit:"cc",name:"agua tibia"},
+{id:6,qty:"",unit:"c/n",name:"relleno a elección"}
+],
+prep:"Mezclar harinas con sal. Agregar la grasa desmenuzada. Incorporar el agua tibia de a poco hasta obtener masa homogénea. Amasar bien y dejar descansar 15 min. Estirar fina y cortar círculos de 12cm. Rellenar, repulgar y hornear a 200°C por 20 min o freír."}
+
+,
+// RECETAS DULCES — 35 recetas (id 28-62)
+// Facturas y productos de panificación (10)
+{id:28,name:"Alfajores de maicena",cat:"Facturas y panificación",dif:"baja",time:40,servingsBase:30,
+ings:[
+{id:0,qty:"400",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"200",unit:"g",name:"margarina"},
+{id:3,qty:"150",unit:"g",name:"azúcar"},
+{id:4,qty:"2",unit:"",name:"huevos"},
+{id:5,qty:"10",unit:"g",name:"polvo leudante"},
+{id:6,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:7,qty:"",unit:"c/n",name:"dulce de leche"},
+{id:8,qty:"",unit:"c/n",name:"coco rallado"}
+],
+prep:"Batir la margarina con el azúcar hasta obtener una crema. Agregar los huevos y la esencia de vainilla. Incorporar el almidón de maíz, la harina de arroz y el polvo leudante tamizados. Amasar hasta obtener una masa homogénea. Estirar y cortar con cortante redondo. Hornear a 180°C por 10-12 minutos hasta que estén levemente dorados. Rellenar con dulce de leche y pasar por coco rallado.",
+nutri:{Calorías:"180 kcal",Carbohidratos:"28 g",Proteínas:"2 g",Grasas:"7 g"}},
+
+{id:29,name:"Facturas",cat:"Facturas y panificación",dif:"alta",time:120,servingsBase:24,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"leche fluida tibia"},
+{id:2,qty:"100",unit:"g",name:"margarina"},
+{id:3,qty:"80",unit:"g",name:"azúcar"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"",unit:"c/n",name:"sal"},
+{id:7,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:8,qty:"",unit:"c/n",name:"dulce de leche o crema pastelera para relleno"}
+],
+prep:"Disolver la levadura en leche tibia con una cucharada de azúcar. Mezclar la harina, azúcar y sal. Agregar los huevos, la margarina blanda y la levadura disuelta. Amasar bien hasta obtener una masa lisa. Dejar leudar 40 minutos. Formar las facturas (medias lunas, vigilantes, etc.). Dejar leudar nuevamente 20 minutos. Hornear a 200°C por 15-18 minutos. Rellenar o decorar a gusto.",
+nutri:{Calorías:"210 kcal",Carbohidratos:"32 g",Proteínas:"4 g",Grasas:"8 g"}},
+
+{id:30,name:"Francesitas",cat:"Facturas y panificación",dif:"media",time:50,servingsBase:20,
+ings:[
+{id:0,qty:"250",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"150",unit:"g",name:"fécula de mandioca"},
+{id:2,qty:"100",unit:"g",name:"harina de arroz"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"100",unit:"g",name:"azúcar impalpable"},
+{id:5,qty:"2",unit:"",name:"huevos"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"",unit:"c/n",name:"ralladura de limón"},
+{id:8,qty:"",unit:"c/n",name:"mermelada para relleno"}
+],
+prep:"Batir la margarina con el azúcar impalpable. Agregar los huevos y la ralladura. Incorporar los almidones y harinas tamizados con el polvo leudante. Formar la masa y estirar. Cortar en rectángulos, doblar y rellenar con mermelada. Hornear a 180°C por 15 minutos.",
+nutri:{Calorías:"165 kcal",Carbohidratos:"22 g",Proteínas:"2 g",Grasas:"8 g"}},
+
+{id:31,name:"Lemon pie",cat:"Facturas y panificación",dif:"media",time:60,servingsBase:8,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"margarina"},
+{id:3,qty:"50",unit:"g",name:"azúcar"},
+{id:4,qty:"1",unit:"",name:"huevo"},
+{id:5,qty:"3",unit:"",name:"limones (jugo y ralladura)"},
+{id:6,qty:"200",unit:"g",name:"azúcar (para el relleno)"},
+{id:7,qty:"3",unit:"",name:"huevos (para el relleno)"},
+{id:8,qty:"50",unit:"g",name:"manteca (para el relleno)"},
+{id:9,qty:"3",unit:"",name:"claras (para el merengue)"},
+{id:10,qty:"150",unit:"g",name:"azúcar (para el merengue)"}
+],
+prep:"Masa: mezclar margarina, azúcar, harina y almidón. Agregar el huevo. Forrar molde y hornear a 180°C por 15 min. Crema de limón: cocinar a baño María el jugo y ralladura de limón, azúcar, huevos y manteca hasta espesar. Volcar sobre la masa fría. Merengue: batir claras a nieve, agregar azúcar en forma de lluvia hasta obtener merengue firme. Decorar encima y dorar con soplete o al horno.",
+nutri:{Calorías:"320 kcal",Carbohidratos:"48 g",Proteínas:"5 g",Grasas:"12 g"}},
+
+{id:32,name:"Madalenas",cat:"Facturas y panificación",dif:"baja",time:35,servingsBase:24,
+ings:[
+{id:0,qty:"200",unit:"g",name:"harina de arroz"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"200",unit:"g",name:"azúcar"},
+{id:4,qty:"200",unit:"cc",name:"aceite"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"150",unit:"cc",name:"leche fluida"},
+{id:7,qty:"15",unit:"g",name:"polvo leudante"},
+{id:8,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:9,qty:"",unit:"c/n",name:"ralladura de limón"}
+],
+prep:"Batir los huevos con el azúcar hasta espumar. Agregar el aceite, la leche, la esencia y la ralladura. Incorporar los ingredientes secos tamizados. Mezclar bien. Distribuir en pirotines o molde de madalenas enmantecado. Hornear a 180°C por 18-20 minutos.",
+nutri:{Calorías:"175 kcal",Carbohidratos:"24 g",Proteínas:"2 g",Grasas:"8 g"}},
+
+{id:33,name:"Medialunas dulces",cat:"Facturas y panificación",dif:"alta",time:120,servingsBase:24,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"leche tibia"},
+{id:2,qty:"100",unit:"g",name:"margarina"},
+{id:3,qty:"80",unit:"g",name:"azúcar"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"5",unit:"g",name:"sal"},
+{id:7,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:8,qty:"",unit:"c/n",name:"almíbar para pintar"}
+],
+prep:"Disolver levadura en leche tibia con azúcar. Mezclar harina, sal, azúcar. Agregar huevos, margarina blanda, esencia y levadura. Amasar hasta masa lisa y homogénea. Leudar 40 min tapado. Estirar en círculo, cortar en triángulos y enrollar. Leudar 20 min más. Hornear a 200°C por 15 min. Pintar con almíbar caliente al salir del horno.",
+nutri:{Calorías:"195 kcal",Carbohidratos:"30 g",Proteínas:"4 g",Grasas:"7 g"}},
+
+{id:34,name:"Rogel",cat:"Facturas y panificación",dif:"alta",time:90,servingsBase:12,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"150",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"3",unit:"",name:"yemas"},
+{id:5,qty:"50",unit:"cc",name:"agua fría"},
+{id:6,qty:"500",unit:"g",name:"dulce de leche repostero"},
+{id:7,qty:"3",unit:"",name:"claras (merengue)"},
+{id:8,qty:"200",unit:"g",name:"azúcar (merengue)"}
+],
+prep:"Mezclar harinas con margarina hasta obtener migas. Agregar yemas y agua fría. Amasar apenas y dividir en 6 bollitos. Estirar cada uno muy fino en círculos iguales. Hornear a 200°C por 5-7 min cada tapa. Armar el rogel intercalando tapas frías con dulce de leche. Cubrir con merengue italiano y dorar.",
+nutri:{Calorías:"410 kcal",Carbohidratos:"58 g",Proteínas:"5 g",Grasas:"18 g"}},
+
+{id:35,name:"Tarta de ricota",cat:"Facturas y panificación",dif:"media",time:70,servingsBase:8,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"120",unit:"g",name:"margarina"},
+{id:4,qty:"50",unit:"g",name:"azúcar"},
+{id:5,qty:"1",unit:"",name:"huevo (para la masa)"},
+{id:6,qty:"500",unit:"g",name:"ricota"},
+{id:7,qty:"3",unit:"",name:"huevos (para el relleno)"},
+{id:8,qty:"150",unit:"g",name:"azúcar (para el relleno)"},
+{id:9,qty:"",unit:"c/n",name:"ralladura de limón"},
+{id:10,qty:"",unit:"c/n",name:"pasas de uva (opcional)"}
+],
+prep:"Masa: mezclar harinas, margarina, azúcar y huevo hasta unir. Forrar molde de 24cm. Relleno: mezclar ricota con azúcar, huevos, ralladura y pasas. Volcar sobre la masa. Cubrir con tira de masa o dejar abierta. Hornear a 170°C por 45-50 min hasta que esté firme y dorada.",
+nutri:{Calorías:"295 kcal",Carbohidratos:"36 g",Proteínas:"9 g",Grasas:"13 g"}},
+
+{id:36,name:"Tiramisú",cat:"Facturas y panificación",dif:"media",time:40,servingsBase:8,
+ings:[
+{id:0,qty:"200",unit:"g",name:"vainillas sin gluten"},
+{id:1,qty:"250",unit:"g",name:"queso mascarpone"},
+{id:2,qty:"3",unit:"",name:"huevos"},
+{id:3,qty:"100",unit:"g",name:"azúcar"},
+{id:4,qty:"200",unit:"cc",name:"café fuerte frío"},
+{id:5,qty:"",unit:"c/n",name:"cacao amargo en polvo"},
+{id:6,qty:"",unit:"c/n",name:"licor de café (opcional)"}
+],
+prep:"Separar claras y yemas. Batir yemas con azúcar hasta obtener crema blanca. Agregar el mascarpone mezclando suavemente. Batir claras a nieve firme e incorporar en forma envolvente. Mojar rápidamente las vainillas en café (con licor si se usa). Armar capas en fuente: vainillas, crema, vainillas, crema. Refrigerar mínimo 4 horas. Antes de servir, espolvorear con cacao.",
+nutri:{Calorías:"320 kcal",Carbohidratos:"35 g",Proteínas:"7 g",Grasas:"18 g"}},
+
+{id:37,name:"Tortas negras",cat:"Facturas y panificación",dif:"baja",time:45,servingsBase:20,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"150",unit:"g",name:"azúcar"},
+{id:4,qty:"100",unit:"g",name:"margarina"},
+{id:5,qty:"2",unit:"",name:"huevos"},
+{id:6,qty:"30",unit:"g",name:"cacao amargo"},
+{id:7,qty:"10",unit:"g",name:"polvo leudante"},
+{id:8,qty:"50",unit:"cc",name:"leche fluida"}
+],
+prep:"Batir margarina con azúcar. Agregar los huevos uno a uno. Incorporar los ingredientes secos tamizados (harinas, cacao, polvo leudante) alternando con la leche. Extender en una placa enmantecada (1-1.5 cm de espesor). Hornear a 180°C por 18-20 minutos. Cortar en cuadraditos o rectángulos.",
+nutri:{Calorías:"155 kcal",Carbohidratos:"22 g",Proteínas:"2 g",Grasas:"7 g"}},
+
+// Panes y otros amasados dulces (8)
+{id:38,name:"Bizcochuelo",cat:"Panes y amasados dulces",dif:"baja",time:50,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"200",unit:"g",name:"azúcar"},
+{id:3,qty:"5",unit:"",name:"huevos"},
+{id:4,qty:"15",unit:"g",name:"polvo leudante"},
+{id:5,qty:"",unit:"c/n",name:"esencia de vainilla"}
+],
+prep:"Batir los huevos con el azúcar durante 10-12 minutos hasta obtener una crema espumosa y blanca. Agregar la esencia. Incorporar en forma envolvente la mezcla de almidón, harina y polvo leudante tamizados. Volcar en molde de 24cm enmantecado y enharinado. Hornear a 170°C por 35-40 minutos. No abrir el horno antes de los 30 minutos.",
+nutri:{Calorías:"220 kcal",Carbohidratos:"38 g",Proteínas:"5 g",Grasas:"4 g"}},
+
+{id:39,name:"Pan con pasas de uva",cat:"Panes y amasados dulces",dif:"media",time:90,servingsBase:10,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"200",unit:"cc",name:"leche tibia"},
+{id:2,qty:"100",unit:"g",name:"azúcar"},
+{id:3,qty:"80",unit:"g",name:"margarina"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"2",unit:"",name:"huevos"},
+{id:6,qty:"150",unit:"g",name:"pasas de uva"},
+{id:7,qty:"5",unit:"g",name:"sal"},
+{id:8,qty:"",unit:"c/n",name:"ralladura de limón"}
+],
+prep:"Hidratar pasas en agua tibia. Disolver levadura en leche tibia con una cdita de azúcar. Mezclar harina, azúcar, sal. Agregar huevos, margarina, ralladura y levadura. Amasar bien. Incorporar las pasas escurridas. Leudar 40 min en lugar cálido. Desgasificar, moldear y colocar en budinera. Leudar 20 min más. Hornear a 180°C por 35-40 min.",
+nutri:{Calorías:"280 kcal",Carbohidratos:"46 g",Proteínas:"5 g",Grasas:"9 g"}},
+
+{id:40,name:"Pan dulce",cat:"Panes y amasados dulces",dif:"alta",time:150,servingsBase:12,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"leche tibia"},
+{id:2,qty:"150",unit:"g",name:"azúcar"},
+{id:3,qty:"100",unit:"g",name:"margarina"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"100",unit:"g",name:"frutas secas picadas"},
+{id:7,qty:"100",unit:"g",name:"frutas abrillantadas"},
+{id:8,qty:"50",unit:"g",name:"pasas de uva"},
+{id:9,qty:"5",unit:"g",name:"sal"},
+{id:10,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:11,qty:"",unit:"c/n",name:"ralladura de naranja y limón"}
+],
+prep:"Disolver levadura en leche tibia. Mezclar harina, azúcar, sal. Agregar huevos, margarina blanda, esencias, ralladura y levadura. Amasar bien. Leudar 60 min. Incorporar frutas secas, abrillantadas y pasas. Leudar en molde de pan dulce 30 min más. Hornear a 170°C por 45-50 min. Enfriar antes de desmoldar.",
+nutri:{Calorías:"350 kcal",Carbohidratos:"55 g",Proteínas:"6 g",Grasas:"12 g"}},
+
+{id:41,name:"Pan madrileño",cat:"Panes y amasados dulces",dif:"media",time:90,servingsBase:10,
+ings:[
+{id:0,qty:"400",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"leche tibia"},
+{id:2,qty:"100",unit:"g",name:"azúcar"},
+{id:3,qty:"80",unit:"g",name:"margarina"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"2",unit:"",name:"huevos"},
+{id:6,qty:"",unit:"c/n",name:"ralladura de limón"},
+{id:7,qty:"",unit:"c/n",name:"esencia de vainilla"}
+],
+prep:"Preparar esponja con levadura, leche tibia y un poco de harina. Reposar 15 min. Mezclar el resto de los ingredientes e incorporar la esponja. Amasar bien hasta obtener masa blanda y homogénea. Leudar 40 min. Moldear en rosca o pan alargado. Leudar 20 min más. Hornear a 180°C por 30-35 min.",
+nutri:{Calorías:"265 kcal",Carbohidratos:"42 g",Proteínas:"5 g",Grasas:"9 g"}},
+
+{id:42,name:"Pastafrola",cat:"Panes y amasados dulces",dif:"baja",time:50,servingsBase:8,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"100",unit:"g",name:"azúcar"},
+{id:5,qty:"2",unit:"",name:"huevos"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:8,qty:"400",unit:"g",name:"dulce de membrillo o guayaba"}
+],
+prep:"Batir margarina con azúcar. Agregar huevos y esencia. Incorporar harinas y polvo leudante tamizados. Unir formando una masa suave. Forrar molde de 24cm reservando un cuarto de la masa. Con la masa restante hacer tiras para la cubierta. Rellenar con dulce de membrillo ablandado. Colocar tiras en cruz. Hornear a 180°C por 30-35 min.",
+nutri:{Calorías:"310 kcal",Carbohidratos:"48 g",Proteínas:"3 g",Grasas:"12 g"}},
+
+{id:43,name:"Pionono dulce",cat:"Panes y amasados dulces",dif:"media",time:35,servingsBase:10,
+ings:[
+{id:0,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"50",unit:"g",name:"harina de arroz"},
+{id:2,qty:"120",unit:"g",name:"azúcar"},
+{id:3,qty:"4",unit:"",name:"huevos"},
+{id:4,qty:"10",unit:"g",name:"polvo leudante"},
+{id:5,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:6,qty:"",unit:"c/n",name:"dulce de leche o crema para relleno"}
+],
+prep:"Batir los huevos con el azúcar hasta triplicar el volumen. Agregar esencia. Incorporar en forma envolvente los ingredientes secos tamizados. Extender en placa de 30x40cm forrada con papel manteca enmantecado. Hornear a 200°C por 10-12 min. Desmoldar sobre un trapo húmedo espolvoreado con azúcar. Enrollar con el trapo y dejar enfriar. Desenrollar, rellenar y volver a enrollar.",
+nutri:{Calorías:"195 kcal",Carbohidratos:"32 g",Proteínas:"4 g",Grasas:"5 g"}},
+
+{id:44,name:"Rosca navideña",cat:"Panes y amasados dulces",dif:"alta",time:120,servingsBase:12,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"cc",name:"leche tibia"},
+{id:2,qty:"120",unit:"g",name:"azúcar"},
+{id:3,qty:"100",unit:"g",name:"margarina"},
+{id:4,qty:"25",unit:"g",name:"levadura prensada"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"",unit:"c/n",name:"ralladura de limón y naranja"},
+{id:7,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:8,qty:"",unit:"c/n",name:"frutas abrillantadas para decorar"},
+{id:9,qty:"",unit:"c/n",name:"almíbar"}
+],
+prep:"Igual que el pan dulce pero dar forma de rosca. Leudar en molde 30 min. Decorar con frutas abrillantadas antes de hornear. Hornear a 180°C por 35-40 min. Pintar con almíbar caliente al retirar del horno.",
+nutri:{Calorías:"305 kcal",Carbohidratos:"48 g",Proteínas:"6 g",Grasas:"10 g"}},
+
+{id:45,name:"Vainillas",cat:"Panes y amasados dulces",dif:"media",time:40,servingsBase:30,
+ings:[
+{id:0,qty:"150",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:2,qty:"50",unit:"g",name:"harina de arroz"},
+{id:3,qty:"150",unit:"g",name:"azúcar"},
+{id:4,qty:"4",unit:"",name:"huevos"},
+{id:5,qty:"10",unit:"g",name:"polvo leudante"},
+{id:6,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:7,qty:"",unit:"c/n",name:"azúcar impalpable para espolvorear"}
+],
+prep:"Separar claras y yemas. Batir yemas con la mitad del azúcar hasta blanquear. Batir claras a punto nieve e incorporar el resto del azúcar. Unir ambas preparaciones en forma envolvente. Agregar esencia. Incorporar harinas tamizadas con el polvo leudante. Colocar en manga con pico liso y hacer bastones en placa enmantecada. Espolvorear con azúcar impalpable. Hornear a 180°C por 12-15 min.",
+nutri:{Calorías:"85 kcal",Carbohidratos:"16 g",Proteínas:"2 g",Grasas:"1 g"}},
+
+// Tortas y budines (9)
+{id:46,name:"Budín clásico",cat:"Tortas y budines",dif:"baja",time:70,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"200",unit:"g",name:"azúcar"},
+{id:4,qty:"150",unit:"g",name:"margarina"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"100",unit:"cc",name:"leche fluida"},
+{id:7,qty:"15",unit:"g",name:"polvo leudante"},
+{id:8,qty:"",unit:"c/n",name:"esencia de vainilla"},
+{id:9,qty:"",unit:"c/n",name:"ralladura de limón"}
+],
+prep:"Batir margarina con azúcar hasta obtener crema. Agregar huevos de a uno, batiendo bien. Incorporar esencia y ralladura. Añadir las harinas tamizadas con el polvo leudante alternando con la leche. Volcar en molde budinero enmantecado. Hornear a 170°C por 50-55 min. Enfriar antes de desmoldar.",
+nutri:{Calorías:"285 kcal",Carbohidratos:"40 g",Proteínas:"4 g",Grasas:"13 g"}},
+
+{id:47,name:"Budín inglés",cat:"Tortas y budines",dif:"baja",time:80,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"200",unit:"g",name:"azúcar"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"3",unit:"",name:"huevos"},
+{id:5,qty:"100",unit:"cc",name:"leche fluida"},
+{id:6,qty:"15",unit:"g",name:"polvo leudante"},
+{id:7,qty:"100",unit:"g",name:"frutas abrillantadas"},
+{id:8,qty:"100",unit:"g",name:"pasas de uva"},
+{id:9,qty:"",unit:"c/n",name:"ralladura de naranja y limón"}
+],
+prep:"Batir margarina con azúcar. Agregar huevos y ralladura. Incorporar harinas alternando con leche. Agregar frutas y pasas enharinadas (evita que se hundan). Hornear en molde budinero a 170°C por 55-60 min.",
+nutri:{Calorías:"310 kcal",Carbohidratos:"46 g",Proteínas:"4 g",Grasas:"13 g"}},
+
+{id:48,name:"Tarta crocante de manzana",cat:"Tortas y budines",dif:"media",time:70,servingsBase:8,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"80",unit:"g",name:"azúcar"},
+{id:5,qty:"1",unit:"",name:"huevo"},
+{id:6,qty:"4",unit:"",name:"manzanas"},
+{id:7,qty:"50",unit:"g",name:"azúcar (para las manzanas)"},
+{id:8,qty:"",unit:"c/n",name:"canela"},
+{id:9,qty:"50",unit:"g",name:"copos de avena certificados sin gluten (cubierta crocante)"},
+{id:10,qty:"30",unit:"g",name:"azúcar mascabo (cubierta)"},
+{id:11,qty:"30",unit:"g",name:"margarina (cubierta)"}
+],
+prep:"Masa: mezclar harinas, margarina, azúcar y huevo. Forrar molde. Relleno: pelar y cortar manzanas, mezclar con azúcar y canela. Distribuir sobre la masa. Cubierta: mezclar copos de avena, azúcar mascabo y margarina derretida. Distribuir sobre las manzanas. Hornear a 180°C por 40-45 min.",
+nutri:{Calorías:"295 kcal",Carbohidratos:"44 g",Proteínas:"3 g",Grasas:"12 g"}},
+
+{id:49,name:"Torta de algarroba",cat:"Tortas y budines",dif:"baja",time:60,servingsBase:10,
+ings:[
+{id:0,qty:"150",unit:"g",name:"harina de algarroba"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"100",unit:"g",name:"harina de arroz"},
+{id:3,qty:"200",unit:"g",name:"azúcar"},
+{id:4,qty:"150",unit:"g",name:"margarina"},
+{id:5,qty:"3",unit:"",name:"huevos"},
+{id:6,qty:"100",unit:"cc",name:"leche fluida"},
+{id:7,qty:"15",unit:"g",name:"polvo leudante"}
+],
+prep:"Batir margarina con azúcar. Incorporar huevos de a uno. Agregar la mezcla de harinas (incluyendo algarroba) tamizadas con polvo leudante, alternando con la leche. Volcar en molde de 24cm. Hornear a 170°C por 40-45 min. Decorar con ganache de chocolate o glasé.",
+nutri:{Calorías:"290 kcal",Carbohidratos:"40 g",Proteínas:"4 g",Grasas:"13 g"}},
+
+{id:50,name:"Torta helada de dulce de leche",cat:"Tortas y budines",dif:"media",time:30,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"galletitas sin gluten tipo María"},
+{id:1,qty:"80",unit:"g",name:"margarina derretida"},
+{id:2,qty:"500",unit:"g",name:"dulce de leche repostero"},
+{id:3,qty:"200",unit:"cc",name:"crema de leche"},
+{id:4,qty:"100",unit:"g",name:"chocolate sin gluten (decoración)"}
+],
+prep:"Procesar galletitas, mezclar con margarina derretida. Forrar molde desmontable y llevar 15 min a freezer. Batir la crema a punto chantilly e incorporar el dulce de leche en forma envolvente. Volcar sobre la base y llevar al freezer mínimo 4 horas. Desmoldar y decorar con chocolate rallado o fundido.",
+nutri:{Calorías:"420 kcal",Carbohidratos:"52 g",Proteínas:"6 g",Grasas:"22 g"}},
+
+{id:51,name:"Torta marmolada",cat:"Tortas y budines",dif:"baja",time:65,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"200",unit:"g",name:"azúcar"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"3",unit:"",name:"huevos"},
+{id:5,qty:"100",unit:"cc",name:"leche fluida"},
+{id:6,qty:"15",unit:"g",name:"polvo leudante"},
+{id:7,qty:"30",unit:"g",name:"cacao amargo"},
+{id:8,qty:"",unit:"c/n",name:"esencia de vainilla"}
+],
+prep:"Preparar la masa base: batir margarina con azúcar, agregar huevos, harinas y leche. Dividir en dos partes iguales. A una parte agregar el cacao tamizado. Alternar cucharadas de ambas masas en molde budinero. Pasar un cuchillo para crear efecto marmolado. Hornear a 170°C por 50 min.",
+nutri:{Calorías:"275 kcal",Carbohidratos:"38 g",Proteínas:"4 g",Grasas:"13 g"}},
+
+{id:52,name:"Torta Marta",cat:"Tortas y budines",dif:"media",time:70,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"200",unit:"g",name:"azúcar"},
+{id:4,qty:"150",unit:"g",name:"margarina"},
+{id:5,qty:"4",unit:"",name:"huevos"},
+{id:6,qty:"150",unit:"cc",name:"leche fluida"},
+{id:7,qty:"15",unit:"g",name:"polvo leudante"},
+{id:8,qty:"200",unit:"g",name:"dulce de leche para relleno"},
+{id:9,qty:"",unit:"c/n",name:"glasé o crema para cubrir"}
+],
+prep:"Preparar bizcochuelo húmedo con todos los ingredientes. Hornear en dos moldes iguales de 24cm a 170°C por 30 min. Enfriar, rellenar con dulce de leche y unir. Cubrir con glasé o crema chantilly. Decorar a gusto.",
+nutri:{Calorías:"330 kcal",Carbohidratos:"46 g",Proteínas:"5 g",Grasas:"14 g"}},
+
+{id:53,name:"Torta para el mate",cat:"Tortas y budines",dif:"baja",time:55,servingsBase:12,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"150",unit:"g",name:"azúcar"},
+{id:3,qty:"100",unit:"g",name:"margarina"},
+{id:4,qty:"3",unit:"",name:"huevos"},
+{id:5,qty:"100",unit:"cc",name:"aceite"},
+{id:6,qty:"100",unit:"cc",name:"leche fluida"},
+{id:7,qty:"15",unit:"g",name:"polvo leudante"},
+{id:8,qty:"",unit:"c/n",name:"ralladura de limón o naranja"}
+],
+prep:"Batir huevos con azúcar. Agregar aceite, margarina blanda y leche. Incorporar harinas y polvo leudante tamizados. Añadir ralladura. Volcar en molde 20x30cm enmantecado. Hornear a 180°C por 35-40 min. Queda húmeda y esponjosa, ideal para acompañar mate.",
+nutri:{Calorías:"240 kcal",Carbohidratos:"32 g",Proteínas:"3 g",Grasas:"12 g"}},
+
+{id:54,name:"Torta trocitos",cat:"Tortas y budines",dif:"baja",time:60,servingsBase:10,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"200",unit:"g",name:"azúcar"},
+{id:3,qty:"150",unit:"g",name:"margarina"},
+{id:4,qty:"3",unit:"",name:"huevos"},
+{id:5,qty:"100",unit:"cc",name:"leche fluida"},
+{id:6,qty:"15",unit:"g",name:"polvo leudante"},
+{id:7,qty:"100",unit:"g",name:"chispas de chocolate sin gluten"},
+{id:8,qty:"",unit:"c/n",name:"esencia de vainilla"}
+],
+prep:"Batir margarina con azúcar. Agregar huevos y esencia. Incorporar harinas y leche. Añadir las chispas de chocolate. Hornear en molde de 24cm a 170°C por 40-45 min. Las chispas crean trocitos de chocolate en cada porción.",
+nutri:{Calorías:"295 kcal",Carbohidratos:"40 g",Proteínas:"4 g",Grasas:"14 g"}},
+
+// El rincón de los niños (8)
+{id:55,name:"Bay biscuit",cat:"El rincón de los niños",dif:"baja",time:30,servingsBase:40,
+ings:[
+{id:0,qty:"300",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"100",unit:"g",name:"harina de arroz"},
+{id:2,qty:"100",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"150",unit:"g",name:"azúcar"},
+{id:4,qty:"100",unit:"g",name:"margarina"},
+{id:5,qty:"2",unit:"",name:"huevos"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"",unit:"c/n",name:"esencia de vainilla"}
+],
+prep:"Batir margarina con azúcar. Agregar huevos y esencia. Incorporar harinas y polvo leudante. Amasar, estirar fino y cortar con cortante. Hornear a 180°C por 10-12 min. No deben quedar muy dorados para que permanezcan blandos.",
+nutri:{Calorías:"75 kcal",Carbohidratos:"11 g",Proteínas:"1 g",Grasas:"3 g"}},
+
+{id:56,name:"Galletitas de arroz",cat:"El rincón de los niños",dif:"baja",time:25,servingsBase:36,
+ings:[
+{id:0,qty:"300",unit:"g",name:"harina de arroz"},
+{id:1,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:2,qty:"100",unit:"g",name:"margarina"},
+{id:3,qty:"80",unit:"g",name:"azúcar"},
+{id:4,qty:"1",unit:"",name:"huevo"},
+{id:5,qty:"50",unit:"cc",name:"leche fluida"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"}
+],
+prep:"Mezclar la margarina con el azúcar. Agregar el huevo y la leche. Incorporar harina de arroz, almidón y polvo leudante tamizados. Formar bolitas o estirar y cortar con cortante. Hornear a 180°C por 12-15 min hasta levemente doradas.",
+nutri:{Calorías:"70 kcal",Carbohidratos:"10 g",Proteínas:"1 g",Grasas:"3 g"}},
+
+{id:57,name:"Galletitas de miel",cat:"El rincón de los niños",dif:"baja",time:30,servingsBase:44,
+ings:[
+{id:0,qty:"300",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"50",unit:"g",name:"azúcar"},
+{id:2,qty:"50",unit:"g",name:"margarina"},
+{id:3,qty:"20",unit:"g",name:"miel"},
+{id:4,qty:"10",unit:"g",name:"polvo leudante"},
+{id:5,qty:"2",unit:"",name:"huevos"}
+],
+prep:"Batir la margarina con azúcar y miel. Agregar los huevos. Incorporar la harina y el polvo leudante. Amasar bien. Estirar a 3-4mm y cortar con cortante. Hornear a 180°C por 10-12 min. Dejar enfriar sobre rejilla.",
+nutri:{Calorías:"55 kcal",Carbohidratos:"9 g",Proteínas:"1 g",Grasas:"2 g"}},
+
+{id:58,name:"Galletitas surtidas",cat:"El rincón de los niños",dif:"media",time:45,servingsBase:60,
+ings:[
+{id:0,qty:"150",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"150",unit:"g",name:"fécula de mandioca"},
+{id:2,qty:"100",unit:"g",name:"harina de arroz"},
+{id:3,qty:"120",unit:"g",name:"margarina"},
+{id:4,qty:"100",unit:"g",name:"leche en polvo"},
+{id:5,qty:"90",unit:"g",name:"azúcar"},
+{id:6,qty:"30",unit:"g",name:"dulce de leche"},
+{id:7,qty:"20",unit:"g",name:"cacao en polvo"},
+{id:8,qty:"20",unit:"g",name:"coco rallado"},
+{id:9,qty:"10",unit:"g",name:"polvo leudante"},
+{id:10,qty:"2",unit:"",name:"huevos"},
+{id:11,qty:"",unit:"c/n",name:"sal"},
+{id:12,qty:"",unit:"c/n",name:"esencia de vainilla"}
+],
+prep:"Hacer una masa base con todos los ingredientes menos el cacao y el coco. Dividir en tres partes: una natural, una con cacao y una con coco. Estirar cada parte y cortar con distintos cortantes para variarlas. Hornear a 180°C por 10-12 min.",
+nutri:{Calorías:"48 kcal",Carbohidratos:"7 g",Proteínas:"1 g",Grasas:"2 g"}},
+
+{id:59,name:"Masitas vienesas",cat:"El rincón de los niños",dif:"media",time:40,servingsBase:36,
+ings:[
+{id:0,qty:"250",unit:"g",name:"harina de arroz"},
+{id:1,qty:"200",unit:"g",name:"fécula de mandioca"},
+{id:2,qty:"100",unit:"g",name:"almidón de maíz"},
+{id:3,qty:"100",unit:"g",name:"leche en polvo"},
+{id:4,qty:"100",unit:"g",name:"margarina"},
+{id:5,qty:"50",unit:"g",name:"azúcar"},
+{id:6,qty:"50",unit:"cc",name:"agua o leche tibia"},
+{id:7,qty:"25",unit:"g",name:"levadura prensada"},
+{id:8,qty:"2",unit:"cdas",name:"miel"},
+{id:9,qty:"1",unit:"",name:"huevo"},
+{id:10,qty:"",unit:"c/n",name:"sal"},
+{id:11,qty:"",unit:"c/n",name:"ralladura de limón"}
+],
+prep:"Disolver la levadura en agua/leche tibia con la miel. Mezclar todos los ingredientes secos. Agregar la margarina, el huevo y la levadura disuelta. Amasar bien. Leudar 30 min. Estirar y cortar o moldear con manga. Leudar 15 min. Hornear a 180°C por 15 min.",
+nutri:{Calorías:"90 kcal",Carbohidratos:"14 g",Proteínas:"2 g",Grasas:"3 g"}},
+
+{id:60,name:"Polvorones",cat:"El rincón de los niños",dif:"baja",time:50,servingsBase:30,
+ings:[
+{id:0,qty:"200",unit:"g",name:"almidón de maíz"},
+{id:1,qty:"200",unit:"g",name:"fécula de mandioca"},
+{id:2,qty:"150",unit:"g",name:"harina de arroz"},
+{id:3,qty:"120",unit:"g",name:"margarina"},
+{id:4,qty:"100",unit:"g",name:"leche en polvo"},
+{id:5,qty:"90",unit:"g",name:"azúcar"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"2",unit:"",name:"huevos"},
+{id:8,qty:"2-3",unit:"cdas",name:"vino dulce"},
+{id:9,qty:"",unit:"c/n",name:"sal"},
+{id:10,qty:"",unit:"c/n",name:"ralladura de naranja"}
+],
+prep:"Batir margarina con azúcar. Agregar huevos, ralladura y el vino dulce. Incorporar harinas, leche en polvo y polvo leudante tamizados. Formar bolitas y aplastar suavemente. Hornear a 180°C por 15-18 min. Deben quedar apenas dorados y muy tiernos.",
+nutri:{Calorías:"115 kcal",Carbohidratos:"17 g",Proteínas:"2 g",Grasas:"5 g"}},
+
+{id:61,name:"Rosquitas",cat:"El rincón de los niños",dif:"baja",time:40,servingsBase:63,
+ings:[
+{id:0,qty:"500",unit:"g",name:"mezcla tres harinas sin gluten"},
+{id:1,qty:"150",unit:"g",name:"azúcar"},
+{id:2,qty:"100",unit:"g",name:"margarina"},
+{id:3,qty:"50",unit:"cc",name:"leche fluida"},
+{id:4,qty:"10",unit:"g",name:"polvo leudante"},
+{id:5,qty:"5",unit:"g",name:"sal"},
+{id:6,qty:"2",unit:"",name:"huevos"},
+{id:7,qty:"200",unit:"g",name:"azúcar (almíbar)"},
+{id:8,qty:"200",unit:"cc",name:"agua (almíbar)"},
+{id:9,qty:"",unit:"c/n",name:"cáscara de limón (almíbar)"}
+],
+prep:"Mezclar harina, azúcar, sal y polvo leudante. Agregar margarina blanda, huevos y leche. Amasar hasta obtener masa lisa. Tomar porciones y dar forma de rosquitas. Hornear a 180°C por 15-18 min. Bañar con almíbar tibio (hervir agua, azúcar y limón 5 min).",
+nutri:{Calorías:"65 kcal",Carbohidratos:"11 g",Proteínas:"1 g",Grasas:"2 g"}},
+
+{id:62,name:"Scones",cat:"El rincón de los niños",dif:"baja",time:45,servingsBase:26,
+ings:[
+{id:0,qty:"200",unit:"g",name:"harina de arroz"},
+{id:1,qty:"50",unit:"g",name:"almidón de maíz o semita"},
+{id:2,qty:"50",unit:"g",name:"fécula de mandioca"},
+{id:3,qty:"50",unit:"cc",name:"leche fluida"},
+{id:4,qty:"30",unit:"g",name:"azúcar"},
+{id:5,qty:"20",unit:"cc",name:"aceite"},
+{id:6,qty:"10",unit:"g",name:"polvo leudante"},
+{id:7,qty:"1",unit:"",name:"huevo"},
+{id:8,qty:"",unit:"c/n",name:"ralladura de limón"}
+],
+prep:"Mezclar los ingredientes secos tamizados. Agregar el aceite en forma de lluvia y mezclar. Incorporar el huevo, la leche y la ralladura. Unir hasta formar masa homogénea sin amasar en exceso. Estirar a 1.5 cm de espesor. Cortar con cortante redondo. Hornear a 200°C por 15-18 min hasta dorar. Servir tibios con manteca y mermelada.",
+nutri:{Calorías:"90 kcal",Carbohidratos:"14 g",Proteínas:"2 g",Grasas:"3 g"}}
+
+];
+
+// ===========================
+// STATE
+// ===========================
+let favorites = JSON.parse(localStorage.getItem('favs') || '[]');
+let checkedShop = JSON.parse(localStorage.getItem('checkedShop') || '[]');
+let activeFilter = 'Todas';
+let currentServings = {};
+
+function saveFavs() { localStorage.setItem('favs', JSON.stringify(favorites)); }
+function saveShop() { localStorage.setItem('checkedShop', JSON.stringify(checkedShop)); }
+
+// ===========================
+// TABS
+// ===========================
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'favoritos') renderFavorites();
+  if (name === 'compras') renderRecipeSelector();
+}
+
+// ===========================
+// FILTER CHIPS
+// ===========================
+function buildChips() {
+  const cats = ['Todas', ...new Set(RECIPES.map(r => r.cat))];
+  const container = document.getElementById('filter-chips');
+  container.innerHTML = cats.map(c =>
+    `<button class="chip${c==='Todas'?' active':''}" onclick="setFilter(this,'${c}')">${c}</button>`
+  ).join('');
+}
+
+function setFilter(el, cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterRecipes();
+}
+
+// ===========================
+// RENDER RECIPES
+// ===========================
+function filterRecipes() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = RECIPES.filter(r => {
+    const matchCat = activeFilter === 'Todas' || r.cat === activeFilter;
+    const matchQ = !q || r.name.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  renderRecipes(filtered);
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  filterRecipes();
+}
+
+function renderRecipes(list) {
+  const container = document.getElementById('recipes-container');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-msg">No se encontraron recetas</div>';
+    return;
+  }
+  container.innerHTML = list.map(r => recipeCard(r)).join('');
+}
+
+function difBadge(d) {
+  const cls = d==='baja'?'badge-dif-baja':d==='media'?'badge-dif-media':'badge-dif-alta';
+  return `<span class="badge ${cls}">● ${d}</span>`;
+}
+
+function recipeCard(r) {
+  const isFav = favorites.includes(r.id);
+  const servings = currentServings[r.id] || r.servingsBase;
+  const ratio = servings / r.servingsBase;
+  return `
+<div class="recipe-card" id="card-${r.id}">
+  <div class="recipe-header" onclick="toggleCard(${r.id})">
+    <div class="recipe-header-info">
+      <h3>${r.name}</h3>
+      <div class="recipe-meta">
+        <span class="badge badge-cat">${r.cat}</span>
+        ${difBadge(r.dif)}
+        <span class="badge badge-time">⏱ ${r.time} min</span>
+      </div>
+    </div>
+    <div class="recipe-icons">
+      <button class="fav-btn" onclick="toggleFav(event,${r.id})">${isFav?'⭐':'☆'}</button>
+      <span class="expand-icon">▼</span>
+    </div>
+  </div>
+  <div class="recipe-body">
+    <div class="recipe-section">
+      <div class="servings-row">
+        <span>Porciones / piezas</span>
+        <div class="servings-ctrl">
+          <button onclick="changeServings(event,${r.id},-1)">−</button>
+          <span class="servings-num" id="srv-${r.id}">${servings}</span>
+          <button onclick="changeServings(event,${r.id},1)">+</button>
+        </div>
+      </div>
+      <h4>Ingredientes</h4>
+      <ul class="ing-list">
+        ${r.ings.map(i => `<li><span class="ing-qty" id="qty-${r.id}-${i.id}">${scaleQty(i.qty, ratio)} ${i.unit}</span><span class="ing-name">${i.name}</span></li>`).join('')}
+      </ul>
+    </div>
+    <div class="recipe-section">
+      <h4>Preparación</h4>
+      <p class="prep-text">${r.prep}</p>
+    </div>
+    ${r.nutri ? `
+    <div class="recipe-section">
+      <h4>Información nutricional (por porción)</h4>
+      <table class="nutri-table">
+        ${Object.entries(r.nutri).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+      </table>
+    </div>` : ''}
+  </div>
+</div>`;
+}
+
+function scaleQty(qty, ratio) {
+  if (!qty) return '';
+  const num = parseFloat(qty);
+  if (isNaN(num)) return qty;
+  const scaled = Math.round(num * ratio * 10) / 10;
+  return scaled % 1 === 0 ? scaled.toString() : scaled.toFixed(1);
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  card.classList.toggle('open');
+}
+
+function changeServings(e, id, delta) {
+  e.stopPropagation();
+  const r = RECIPES.find(r => r.id === id);
+  const cur = currentServings[id] || r.servingsBase;
+  const next = Math.max(1, cur + delta);
+  currentServings[id] = next;
+  document.getElementById('srv-' + id).textContent = next;
+  const ratio = next / r.servingsBase;
+  r.ings.forEach(i => {
+    const el = document.getElementById(`qty-${id}-${i.id}`);
+    if (el) el.textContent = scaleQty(i.qty, ratio) + ' ' + i.unit;
+  });
+}
+
+// ===========================
+// FAVORITES
+// ===========================
+function toggleFav(e, id) {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  if (favorites.includes(id)) {
+    favorites = favorites.filter(f => f !== id);
+    btn.textContent = '☆';
+  } else {
+    favorites.push(id);
+    btn.textContent = '⭐';
+  }
+  saveFavs();
+}
+
+function renderFavorites() {
+  const section = document.getElementById('fav-section');
+  if (!favorites.length) {
+    section.innerHTML = '<div class="empty-msg">Aún no marcaste favoritos.<br>Tocá ☆ en cualquier receta.</div>';
+    return;
+  }
+  const favList = RECIPES.filter(r => favorites.includes(r.id));
+  section.innerHTML = favList.map(r => recipeCard(r)).join('');
+}
+
+// ===========================
+// SHOPPING LIST
+// ===========================
+function renderRecipeSelector() {
+  const cats = [...new Set(RECIPES.map(r => r.cat))];
+  let html = '';
+  cats.forEach(cat => {
+    html += `<div class="sel-category">${cat}</div>`;
+    RECIPES.filter(r => r.cat === cat).forEach(r => {
+      html += `<div class="sel-recipe">
+        <input type="checkbox" id="sel-${r.id}" value="${r.id}">
+        <label for="sel-${r.id}">${r.name}</label>
+      </div>`;
+    });
+  });
+  document.getElementById('recipe-selector-list').innerHTML = html;
+}
+
+function generateShoppingList() {
+  const selected = [...document.querySelectorAll('#recipe-selector-list input:checked')].map(i => parseInt(i.value));
+  if (!selected.length) {
+    document.getElementById('shopping-list-output').innerHTML = '<div class="empty-msg">Seleccioná al menos una receta.</div>';
+    document.getElementById('shop-counter').textContent = '';
+    return;
+  }
+
+  // Aggregate ingredients
+  const agg = {};
+  selected.forEach(id => {
+    const r = RECIPES.find(r => r.id === id);
+    const scale = (currentServings[id] || r.servingsBase) / r.servingsBase;
+    r.ings.forEach(i => {
+      const key = i.name.toLowerCase().trim();
+      if (!agg[key]) agg[key] = { name: i.name, qty: 0, unit: i.unit, hasNum: false };
+      const num = parseFloat(i.qty);
+      if (!isNaN(num)) {
+        agg[key].qty += num * scale;
+        agg[key].hasNum = true;
+      }
+    });
+  });
+
+  // Sort alphabetically and render
+  const items = Object.values(agg).sort((a,b) => a.name.localeCompare(b.name));
+
+  let html = '';
+  items.forEach((item, idx) => {
+    const isChecked = checkedShop.includes(idx);
+    const qtyStr = item.hasNum ? `${Math.round(item.qty * 10) / 10} ${item.unit}` : item.unit || '';
+    html += `<div class="shop-item${isChecked?' checked':''}" onclick="toggleShopItem(this,${idx})">
+      <span class="check-icon">${isChecked?'✅':'⬜'}</span>
+      <span class="shop-item-qty">${qtyStr}</span>
+      <span class="shop-item-name">${item.name}</span>
+    </div>`;
+  });
+
+  document.getElementById('shopping-list-output').innerHTML = html;
+  updateShopCounter(items.length);
+}
+
+function toggleShopItem(el, idx) {
+  el.classList.toggle('checked');
+  const icon = el.querySelector('.check-icon');
+  if (el.classList.contains('checked')) {
+    icon.textContent = '✅';
+    if (!checkedShop.includes(idx)) checkedShop.push(idx);
+  } else {
+    icon.textContent = '⬜';
+    checkedShop = checkedShop.filter(i => i !== idx);
+  }
+  saveShop();
+  const total = document.querySelectorAll('.shop-item').length;
+  updateShopCounter(total);
+}
+
+function updateShopCounter(total) {
+  const done = document.querySelectorAll('.shop-item.checked').length;
+  document.getElementById('shop-counter').textContent = total ? `${done}/${total} comprados` : '';
+}
+
+function checkAllShop() {
+  document.querySelectorAll('.shop-item').forEach((el, idx) => {
+    el.classList.add('checked');
+    el.querySelector('.check-icon').textContent = '✅';
+    if (!checkedShop.includes(idx)) checkedShop.push(idx);
+  });
+  saveShop();
+  const total = document.querySelectorAll('.shop-item').length;
+  updateShopCounter(total);
+}
+
+function resetShop() {
+  document.querySelectorAll('.shop-item').forEach(el => {
+    el.classList.remove('checked');
+    el.querySelector('.check-icon').textContent = '⬜';
+  });
+  checkedShop = [];
+  saveShop();
+  const total = document.querySelectorAll('.shop-item').length;
+  updateShopCounter(total);
+}
+
+// ===========================
+// INIT
+// ===========================
+buildChips();
+filterRecipes();
+</script>
+</body>
+</html>
